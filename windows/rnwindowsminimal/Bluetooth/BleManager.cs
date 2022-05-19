@@ -157,11 +157,17 @@ namespace rnwindowsminimal.Bluetooth
         /// </summary>
         private void StartBleDeviceWatcher()
         {
-           
+            // Additional properties we would like about the device.
+            // Property strings are documented here https://msdn.microsoft.com/en-us/library/windows/desktop/ff521659(v=vs.85).aspx
+            string[] crequestedProperties = { "System.Devices.Aep.DeviceAddress", "System.Devices.Aep.IsConnected", "System.Devices.Aep.Bluetooth.Le.IsConnectable" };
+
+            // BT_Code: Example showing paired and non-paired in a single query.
+            string aqsAllBluetoothLEDevices = "(System.Devices.Aep.ProtocolId:=\"{bb7bb05e-5972-42b5-94fc-76eaa7084d49}\")";
+
             deviceWatcher =
                     DeviceInformation.CreateWatcher(
-                        requestedAqsFilters,
-                        requestedProperties,
+                        aqsAllBluetoothLEDevices,
+                        crequestedProperties,
                         DeviceInformationKind.AssociationEndpoint);
 
             // Register event handlers before starting the watcher.

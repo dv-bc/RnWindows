@@ -76,7 +76,7 @@ function PairDevice(Id:string)
 }
   function DeviceWatcherAdded(obj: string) {
     var device = JSON.parse(obj);
-    knownDevices.push({ Id: device.Id, Name: device.Name })
+    //knownDevices.push({ Id: device.Id, Name: device.Name })
     setDevices(knownDevices);
 
     console.log(knownDevices);
