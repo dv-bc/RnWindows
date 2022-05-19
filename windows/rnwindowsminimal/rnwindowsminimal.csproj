@@ -108,6 +108,7 @@
     <Compile Include="Bluetooth\BleDevice.cs" />
     <Compile Include="Bluetooth\BleManager.cs" />
     <Compile Include="Constants\Enum.cs" />
+    <Compile Include="Constants\SystemConstants.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

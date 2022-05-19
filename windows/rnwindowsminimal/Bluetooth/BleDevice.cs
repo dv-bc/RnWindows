@@ -27,6 +27,16 @@ namespace rnwindowsminimal.Bluetooth
         public bool IsConnected => (bool?)DeviceInformation.Properties["System.Devices.Aep.IsConnected"] == true;
         public bool IsConnectable => (bool?)DeviceInformation.Properties["System.Devices.Aep.Bluetooth.Le.IsConnectable"] == true;
 
+        /// <summary>
+        /// Rssi ID.
+        /// </summary>
+        public int Rssi => 0;
+
+        /// <summary>
+        /// Invoked when the RssiChanges.
+        /// </summary>
+        public event EventHandler<int> RssiChanged;
+
         public IReadOnlyDictionary<string, object> Properties => DeviceInformation.Properties;
 
         //public BitmapImage GlyphBitmapImage { get; private set; }
