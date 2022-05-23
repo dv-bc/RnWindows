@@ -16,7 +16,7 @@
     <AssemblyName>rnwindowsminimal</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.20348.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -108,11 +108,15 @@
     <Compile Include="Bluetooth\BleCharacteristic.cs" />
     <Compile Include="Bluetooth\BleDevice.cs" />
     <Compile Include="Bluetooth\BleManager.cs" />
+    <Compile Include="Bluetooth\BleService.cs" />
+    <Compile Include="Bluetooth\Helpers\BleHelpers.cs" />
+    <Compile Include="Bluetooth\Helpers\PropertyHelper.cs" />
     <Compile Include="Constants\Enum.cs" />
-    <Compile Include="Constants\SystemConstants.cs" />
+    <Compile Include="Constants\Codes.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\ServiceResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AutolinkedNativeModules.g.cs" />
     <Compile Include="ReactPackageProvider.cs" />
@@ -151,7 +155,7 @@
   </ImportGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.9</Version>
+      <Version>6.2.13</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>

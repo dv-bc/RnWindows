@@ -7,8 +7,8 @@ namespace rnwindowsminimal.Constants
 {
     public enum NotifyType
     {
-        StatusMessage,
-        ErrorMessage
+        StatusMessage = 1,
+        ErrorMessage = 0
     };
 
     public class SensorHardwareTypeNames

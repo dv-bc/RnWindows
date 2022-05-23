@@ -1,73 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using Windows.Devices.Enumeration;
 
-namespace rnwindowsminimal.Bluetooth
+public class BleDevice : INotifyPropertyChanged
 {
-    /// <summary>
-    ///     Display class used to represent a BluetoothLEDevice in the Device list
-    /// </summary>
-    public class BleDevice : INotifyPropertyChanged
+    public BleDevice(DeviceInformation deviceInfoIn)
     {
-        public BleDevice(DeviceInformation deviceInfoIn)
-        {
-            DeviceInformation = deviceInfoIn;
-            //UpdateGlyphBitmapImage();
-        }
+        DeviceInformation = deviceInfoIn;
+        //UpdateGlyphBitmapImage();
+    }
 
-        public DeviceInformation DeviceInformation { get; private set; }
+    public DeviceInformation DeviceInformation { get; private set; }
 
-        public string Id => DeviceInformation.Id;
-        public string Name => DeviceInformation.Name;
-        public bool IsPaired => DeviceInformation.Pairing.IsPaired;
-        public bool IsConnected => (bool?)DeviceInformation.Properties["System.Devices.Aep.IsConnected"] == true;
-        public bool IsConnectable => (bool?)DeviceInformation.Properties["System.Devices.Aep.Bluetooth.Le.IsConnectable"] == true;
+    public string Id => DeviceInformation.Id;
+    public string Name => DeviceInformation.Name;
+    public bool IsPaired => DeviceInformation.Pairing.IsPaired;
+    public bool IsConnected => (bool?)DeviceInformation.Properties["System.Devices.Aep.IsConnected"] == true;
+    public bool IsConnectable => (bool?)DeviceInformation.Properties["System.Devices.Aep.Bluetooth.Le.IsConnectable"] == true;
 
-        /// <summary>
-        /// Rssi ID.
-        /// </summary>
-        public int Rssi => 0;
+    public IReadOnlyDictionary<string, object> Properties => DeviceInformation.Properties;
 
-        /// <summary>
-        /// Invoked when the RssiChanges.
-        /// </summary>
-        public event EventHandler<int> RssiChanged;
+    //public BitmapImage GlyphBitmapImage { get; private set; }
 
-        public IReadOnlyDictionary<string, object> Properties => DeviceInformation.Properties;
+    public event PropertyChangedEventHandler PropertyChanged;
 
-        //public BitmapImage GlyphBitmapImage { get; private set; }
+    public void Update(DeviceInformationUpdate deviceInfoUpdate)
+    {
+        DeviceInformation.Update(deviceInfoUpdate);
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        OnPropertyChanged("Id");
+        OnPropertyChanged("Name");
+        OnPropertyChanged("DeviceInformation");
+        OnPropertyChanged("IsPaired");
+        OnPropertyChanged("IsConnected");
+        OnPropertyChanged("Properties");
+        OnPropertyChanged("IsConnectable");
 
-        public void Update(DeviceInformationUpdate deviceInfoUpdate)
-        {
-            DeviceInformation.Update(deviceInfoUpdate);
+//        UpdateGlyphBitmapImage();
+    }
 
-            OnPropertyChanged("Id");
-            OnPropertyChanged("Name");
-            OnPropertyChanged("DeviceInformation");
-            OnPropertyChanged("IsPaired");
-            OnPropertyChanged("IsConnected");
-            OnPropertyChanged("Properties");
-            OnPropertyChanged("IsConnectable");
+    //private async void UpdateGlyphBitmapImage()
+    //{
+    //    DeviceThumbnail deviceThumbnail = await DeviceInformation.GetGlyphThumbnailAsync();
+    //    var glyphBitmapImage = new BitmapImage();
+    //    await glyphBitmapImage.SetSourceAsync(deviceThumbnail);
+    //    GlyphBitmapImage = glyphBitmapImage;
+    //    OnPropertyChanged("GlyphBitmapImage");
+    //}
 
-            //UpdateGlyphBitmapImage();
-        }
-
-        //private async void UpdateGlyphBitmapImage()
-        //{
-        //    DeviceThumbnail deviceThumbnail = await DeviceInformation.GetGlyphThumbnailAsync();
-        //    var glyphBitmapImage = new BitmapImage();
-        //    await glyphBitmapImage.SetSourceAsync(deviceThumbnail);
-        //    GlyphBitmapImage = glyphBitmapImage;
-        //    OnPropertyChanged("GlyphBitmapImage");
-        //}
-
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+    protected void OnPropertyChanged(string name)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
