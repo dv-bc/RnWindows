@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.ReactNative.Managed;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Windows.Devices.Enumeration;
 
@@ -15,12 +16,34 @@ public class BleDevice : INotifyPropertyChanged
     public string Id => DeviceInformation.Id;
     public string Name => DeviceInformation.Name;
     public bool IsPaired => DeviceInformation.Pairing.IsPaired;
-    public bool IsConnected => (bool?)DeviceInformation.Properties["System.Devices.Aep.IsConnected"] == true;
-    public bool IsConnectable => (bool?)DeviceInformation.Properties["System.Devices.Aep.Bluetooth.Le.IsConnectable"] == true;
+    public bool? IsConnected  { get {
+            try
+            {
+                return (bool?)DeviceInformation.Properties["System.Devices.Aep.IsConnected"] == true;
+            }
+            catch (System.Exception)
+            {
+                return null;
+            }
+        }
+    } 
+    public bool? IsConnectable
+    { get {
+            try
+            {
+                return (bool?)DeviceInformation.Properties["System.Devices.Aep.Bluetooth.Le.IsConnectable"] == true;
+            }
+            catch (System.Exception)
+{
+    return null;
+}
+        }
+    } 
+
+
 
     public IReadOnlyDictionary<string, object> Properties => DeviceInformation.Properties;
 
-    //public BitmapImage GlyphBitmapImage { get; private set; }
 
     public event PropertyChangedEventHandler PropertyChanged;
 

@@ -34,6 +34,9 @@ let KnownDevice = [
 interface BleDevice {
   Id: string;
   Name: string;
+  IsPaired: boolean;
+  IsConnected: boolean;
+  IsConnectable: boolean; 
 }
 
 interface Charactheristic {
@@ -45,13 +48,11 @@ interface Charactheristic {
 
 
 export default function BleManager() {
-  const initialDevice: BleDevice[] = [{ Id: "first", Name: "first device" }]
-  const initialChar: Charactheristic[] = [{ Id: "first", Name: "first service" }]
-
+  
   const [isScanningState, setScanning] = useState(false);
   const [IsConnectingState, setConnecting] = useState(false);
   const [knownDevices, setKnownDevices] = useState([]);
-  const [knownCharactheristic, setCharactheristic] = useState(initialChar);
+  const [ConnectedDevice, setConnectedDevice] = useState([]);
 
 
   const tempKnownDevices = useRef<BleDevice[]>();
@@ -64,9 +65,10 @@ export default function BleManager() {
     // componentDidMount in functional component.
     WinBluetoothEventEmitter.addListener('Event', BleEvent);
     WinBluetoothEventEmitter.addListener('UserNotification', UserNotification);
-    WinBluetoothEventEmitter.addListener('DeviceAdded', DeviceWatcherAdded);
-    WinBluetoothEventEmitter.addListener('DeviceUpdated', DeviceWatcherUpdated);
-    WinBluetoothEventEmitter.addListener('DeviceRemoved', DeviceWatcherRemoved);
+    WinBluetoothEventEmitter.addListener('KnownDeviceUpdated', KnownDevicesUpdated);
+    WinBluetoothEventEmitter.addListener('ConnectedDevicesUpdated', ConnectedDevicesUpdated);
+    WinBluetoothEventEmitter.addListener('OnDeviceDisconnect', ConnectedDevicesUpdated);
+    
     WinBluetoothEventEmitter.addListener('DeviceEnumerationCompleted', DeviceWatcherEnumerationCompleted);
     WinBluetoothEventEmitter.addListener('IsScanningEvent', SetScanning);
     WinBluetoothEventEmitter.addListener('IsConnecting', SetConnecting);
@@ -77,9 +79,8 @@ export default function BleManager() {
       // Anything in here is fired on component unmount.
       WinBluetoothEventEmitter.addListener('Event', BleEvent).remove();
       WinBluetoothEventEmitter.addListener('UserNotification', UserNotification).remove();
-      WinBluetoothEventEmitter.addListener('DeviceAdded', DeviceWatcherAdded).remove();
-      WinBluetoothEventEmitter.addListener('DeviceUpdated', DeviceWatcherUpdated).remove();
-      WinBluetoothEventEmitter.addListener('DeviceRemoved', DeviceWatcherRemoved).remove();
+      WinBluetoothEventEmitter.addListener('KnownDeviceUpdated', KnownDevicesUpdated).remove();
+      WinBluetoothEventEmitter.addListener('ConnectedDevicesUpdated', ConnectedDevicesUpdated).remove();
       WinBluetoothEventEmitter.addListener('IsScanningEvent', SetScanning).remove();
       WinBluetoothEventEmitter.addListener('IsConnecting', SetConnecting).remove();
       WinBluetoothEventEmitter.addListener('DeviceEnumerationCompleted', DeviceWatcherEnumerationCompleted).remove();
@@ -88,7 +89,7 @@ export default function BleManager() {
 
   //#region EVENT FUNCTIONS 
 
-  function SetScanning(isScanning: bool) {
+  function SetScanning(isScanning: booleanl) {
     setScanning(isScanning)
     console.log("scanning set to " + isScanning)
   }
@@ -97,13 +98,12 @@ export default function BleManager() {
   }
 
   function PairDevice(Id: string) {
-    setCharactheristic([]);
     const tempChar: Charactheristic[] = [];
 
 
 
     NativeModules.BleManager.Connect(Id)
-      .then(data => {
+      .then((data:string) => {
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
           alert("Successfully Connected");
@@ -119,34 +119,30 @@ export default function BleManager() {
       });
 
   }
-  function DeviceWatcherAdded(obj: string) {
-    var device = JSON.parse(obj);
-    if (device != null) {
-      const tempDevices: BleDevice[] = tempKnownDevices.current || [];
-      tempKnownDevices.current = [...tempDevices, { Id: device.Id, Name: device.Name }];
-      setKnownDevices(tempKnownDevices.current);
-      console.log("device added : " + device.Id + " " + device.Name);
-    }
+function KnownDevicesUpdated(knownDevicesData:string)
+{
+  var devices = JSON.parse(knownDevicesData);
+  if (devices != null) {
+ const knownDevices:BleDevice[] =[];
+ devices.forEach(item => {
+  knownDevices.push(item)
+});
+    setKnownDevices(knownDevices);
   }
+}
 
-  function DeviceWatcherUpdated(obj: string) {
-    var device = JSON.parse(obj);
-    console.log("device updated : " + device.Id + " " + device.Name);
+function ConnectedDevicesUpdated(knownDevicesData:string)
+{
+  var devices = JSON.parse(knownDevicesData);
+  if (devices != null) {
+ const connectedDevices:BleDevice[] =[];
+ devices.forEach(item => {
+  connectedDevices.push(item)
+});
+setConnectedDevice(connectedDevices);
   }
-  function DeviceWatcherRemoved(obj: string) {
+}
 
-    var device = JSON.parse(obj);
-
-    var index = knownDevices.findIndex((el) => el.Id == device.Id)
-    console.log(index);
-    if (index != -1) {
-      //console.log(knownDevices);
-      const temp = (tempKnownDevices.current as BleDevice[]).slice(index, 1);
-      console.log(knownDevices);
-      setKnownDevices(temp);
-      console.log("device removed : " + device.Id + " " + device.Name);
-    }
-  }
 
   function DeviceWatcherEnumerationCompleted(message: string) {
     alert(message);
@@ -190,12 +186,13 @@ export default function BleManager() {
     </TouchableOpacity>
   );
 
-  const renderDeviceItem = ({ item }) => {
+  const renderDeviceItem = ({ item,index }) => {
     //const backgroundColor = item.id === selectedId ? "#6e3b6e" : "#f9c2ff";
     //const color = item.id === selectedId ? 'white' : 'black';
 
     return (
       <Item
+      key={index}
         item={item}
         onPress={() => PairDevice(item.Id)}
         backgroundColor={"#6e3b6e"}
@@ -205,12 +202,19 @@ export default function BleManager() {
     );
   };
 
-  const renderCharacteristicItem = ({ item }) => {
+  const renderConnectedDevice = (data) => {
+
+    console.log("data",data)
+
+    const {item,index} = data;
+
     //const color = item.id === selectedId ? 'white' : 'black';
 
     return (
       <Item
-        item={item}
+        key={index}
+        onPress={() => PairDevice(item.Id)}
+        item={item}        
         backgroundColor={"#f9c2ff"}
         textColor={'black'}
         fontSize={'11'}
@@ -221,10 +225,8 @@ export default function BleManager() {
 
 
 
-
-
   return (
-    <View style={{ padding: 10, height: 500 }}>
+    <View style={{ padding: 10, height: 600 }}>
       <Text style={{
         fontWeight: 'bold', textAlign: "center",
         marginBottom: 10,
@@ -253,7 +255,7 @@ export default function BleManager() {
          marginRight :20 }} >
         <Text style={{ fontWeight: 'bold' }}>sensor List :</Text>
         <Text style={{ }}>select device from list below</Text>
-        <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 250}} >
+        <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 400}} >
         <FlatList
              data={knownDevices}
            renderItem={renderDeviceItem}
@@ -267,12 +269,12 @@ export default function BleManager() {
           marginRight :20 }} >
         <Text style={{ fontWeight: 'bold' }}>service List :</Text>
         <Text style={{ }}>select available service from list below</Text>
-        <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 250}} >
+        <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 400}} >
         <FlatList
-             data={knownCharactheristic}
-           renderItem={renderCharacteristicItem}
+             data={ConnectedDevice}
+           renderItem={renderConnectedDevice}
              keyExtractor={(item) => item.Id}
-             extraData={knownCharactheristic}
+             extraData={ConnectedDevice}
            />  
         </View>
         </View>
@@ -280,7 +282,7 @@ export default function BleManager() {
         marginRight :20 }} >
           <Text style={{ fontWeight: 'bold' }}>Charactheristic List :</Text>
           <Text style={{ }}>select Charactheristic service from list below</Text>
-          <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 250}} >
+          <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 400}} >
 
         </View>
         </View>
