@@ -13,6 +13,9 @@ import {
 
 import { NativeModules, NativeEventEmitter } from 'react-native';
 
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 const WinBluetoothEventEmitter = new NativeEventEmitter(NativeModules.BleManager);
 let KnownDevice = [
   // {
@@ -44,7 +47,7 @@ interface Charactheristic {
 
 
 
-export default function BleManager() {
+export default function BleManager({ navigation }) {
   const initialDevice: BleDevice[] = [{ Id: "first", Name: "first device" }]
   const initialChar: Charactheristic[] = [{ Id: "first", Name: "first service" }]
 
@@ -161,7 +164,7 @@ export default function BleManager() {
 
 
   function aClick() {
-   
+
     NativeModules.BleManager.SelectBatteryService();
   }
 
@@ -213,7 +216,7 @@ export default function BleManager() {
         item={item}
         backgroundColor={"#f9c2ff"}
         textColor={'black'}
-        fontSize={'11'}
+        fontSize={'11'} 
       />
     );
   };
@@ -225,16 +228,36 @@ export default function BleManager() {
 
   return (
     <View style={{ padding: 10, height: 500 }}>
+      <View style={{
+        flexWrap: "wrap",
+        flexDirection: "row",
+        marginVertical: 10,
+
+      }}>
+      <View style={{ flex: 2 }}><Button
+        title="Back to home"
+        onPress={() =>
+          navigation.navigate('Home', { name: 'HomeScreen' })
+        }
+      /></View>
+      <View style={{ flex: 2}}><Button
+        title="Back"
+        onPress={() =>
+          navigation.goBack()
+        }
+      /></View>
+</View>
+
       <Text style={{
         fontWeight: 'bold', textAlign: "center",
         marginBottom: 10,
         fontSize: 24
-      }}>BLE DEMO</Text>
+      }}>BLE DEMO asd</Text>
       <Text>{NativeModules.BleManager.Connected}</Text>
       <View style={{
         flexWrap: "wrap",
         flexDirection: "row",
-        marginVertical:10
+        marginVertical: 10
       }}>
         <View style={{ flex: 1 }} >
           <Button onPress={ScanClicked} title={isScanningState ? "Scanning..." : "Scan for sensor"} />
@@ -246,51 +269,57 @@ export default function BleManager() {
       <View style={{
         flexWrap: "wrap",
         flexDirection: "row",
-        marginVertical :10,
-        
+        marginVertical: 10,
+
       }}>
-        <View style={{ flex: 2,
-         marginRight :20 }} >
-        <Text style={{ fontWeight: 'bold' }}>sensor List :</Text>
-        <Text style={{ }}>select device from list below</Text>
-        <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 250}} >
-        <FlatList
-             data={knownDevices}
-           renderItem={renderDeviceItem}
-             keyExtractor={(item) => item.Id}
-             extraData={knownDevices}
-           />  
-        </View>
-        
-        </View>
-        <View style={{ flex: 2,
-          marginRight :20 }} >
-        <Text style={{ fontWeight: 'bold' }}>service List :</Text>
-        <Text style={{ }}>select available service from list below</Text>
-        <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 250}} >
-        <FlatList
-             data={knownCharactheristic}
-           renderItem={renderCharacteristicItem}
-             keyExtractor={(item) => item.Id}
-             extraData={knownCharactheristic}
-           />  
-        </View>
-        </View>
-        <View style={{ flex: 2,
-        marginRight :20 }} >
-          <Text style={{ fontWeight: 'bold' }}>Charactheristic List :</Text>
-          <Text style={{ }}>select Charactheristic service from list below</Text>
-          <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 250}} >
+        <View style={{
+          flex: 2,
+          marginRight: 20
+        }} >
+          <Text style={{ fontWeight: 'bold' }}>sensor List :</Text>
+          <Text style={{}}>select device from list below</Text>
+          <View style={{ borderColor: 'black', borderStyle: 'solid', borderWidth: 2, height: 250 }} >
+            <FlatList
+              data={knownDevices}
+              renderItem={renderDeviceItem}
+              keyExtractor={(item) => item.Id}
+              extraData={knownDevices}
+            />
+          </View>
 
         </View>
+        <View style={{
+          flex: 2,
+          marginRight: 20
+        }} >
+          <Text style={{ fontWeight: 'bold' }}>service List :</Text>
+          <Text style={{}}>select available service from list below</Text>
+          <View style={{ borderColor: 'black', borderStyle: 'solid', borderWidth: 2, height: 250 }} >
+            <FlatList
+              data={knownCharactheristic}
+              renderItem={renderCharacteristicItem}
+              keyExtractor={(item) => item.Id}
+              extraData={knownCharactheristic}
+            />
+          </View>
+        </View>
+        <View style={{
+          flex: 2,
+          marginRight: 20
+        }} >
+          <Text style={{ fontWeight: 'bold' }}>Charactheristic List :</Text>
+          <Text style={{}}>select Charactheristic service from list below</Text>
+          <View style={{ borderColor: 'black', borderStyle: 'solid', borderWidth: 2, height: 250 }} >
+
+          </View>
         </View>
       </View>
 
       <Button onPress={aClick} title={"select 'Battery' Service"} />
       <Button onPress={bCLick} title={"select 'BatteryLevel' Characteristic"} />
       <Button onPress={cCLick} title={"subscribe changes"} />
- 
-      
+
+
     </View>
     // <View style={{ padding: 10, flex: 1 }}>
     //   
