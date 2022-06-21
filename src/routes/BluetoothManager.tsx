@@ -47,7 +47,7 @@ interface Charactheristic {
 
 
 
-export default function BleManager({ navigation }) {
+export default function BleManager() {
   const initialDevice: BleDevice[] = [{ Id: "first", Name: "first device" }]
   const initialChar: Charactheristic[] = [{ Id: "first", Name: "first service" }]
 
@@ -216,7 +216,7 @@ export default function BleManager({ navigation }) {
         item={item}
         backgroundColor={"#f9c2ff"}
         textColor={'black'}
-        fontSize={'11'} 
+        fontSize={'11'}
       />
     );
   };
@@ -228,25 +228,7 @@ export default function BleManager({ navigation }) {
 
   return (
     <View style={{ padding: 10, height: 500 }}>
-      <View style={{
-        flexWrap: "wrap",
-        flexDirection: "row",
-        marginVertical: 10,
 
-      }}>
-      <View style={{ flex: 2 }}><Button
-        title="Back to home"
-        onPress={() =>
-          navigation.navigate('Home', { name: 'HomeScreen' })
-        }
-      /></View>
-      <View style={{ flex: 2}}><Button
-        title="Back"
-        onPress={() =>
-          navigation.goBack()
-        }
-      /></View>
-</View>
 
       <Text style={{
         fontWeight: 'bold', textAlign: "center",

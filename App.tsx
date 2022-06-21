@@ -29,11 +29,8 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 
-import BleManager, { BluetoothManager } from './src/routes/BluetoothManager';
-import HomeScreen from './src/routes/Home';
-import StackNav from './src/navigation/StackNav';
-import Camera from './src/routes/Camera';
 
+import Navigator from './src/routes/Navigator';
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -49,9 +46,7 @@ const App = () => {
 
 
   return (
-
-    <BleManager></BleManager>
-
+   <Navigator/>
   );
 };
 
