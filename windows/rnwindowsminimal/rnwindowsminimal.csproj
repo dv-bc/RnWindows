@@ -105,7 +105,6 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Bluetooth\BleCharacteristic.cs" />
     <Compile Include="Bluetooth\BleDevice.cs" />
     <Compile Include="Bluetooth\BleManager.cs" />
     <Compile Include="Bluetooth\BleService.cs" />

@@ -13,6 +13,9 @@ import {
 
 import { NativeModules, NativeEventEmitter } from 'react-native';
 
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 const WinBluetoothEventEmitter = new NativeEventEmitter(NativeModules.BleManager);
 let KnownDevice = [
   // {
@@ -157,7 +160,7 @@ setConnectedDevice(connectedDevices);
 
 
   function aClick() {
-   
+
     NativeModules.BleManager.SelectBatteryService();
   }
 
@@ -231,12 +234,12 @@ setConnectedDevice(connectedDevices);
         fontWeight: 'bold', textAlign: "center",
         marginBottom: 10,
         fontSize: 24
-      }}>BLE DEMO</Text>
+      }}>BLE DEMO asd</Text>
       <Text>{NativeModules.BleManager.Connected}</Text>
       <View style={{
         flexWrap: "wrap",
         flexDirection: "row",
-        marginVertical:10
+        marginVertical: 10
       }}>
         <View style={{ flex: 1 }} >
           <Button onPress={ScanClicked} title={isScanningState ? "Scanning..." : "Scan for sensor"} />
@@ -248,8 +251,8 @@ setConnectedDevice(connectedDevices);
       <View style={{
         flexWrap: "wrap",
         flexDirection: "row",
-        marginVertical :10,
-        
+        marginVertical: 10,
+
       }}>
         <View style={{ flex: 2,
          marginRight :20 }} >
@@ -278,21 +281,23 @@ setConnectedDevice(connectedDevices);
            />  
         </View>
         </View>
-        <View style={{ flex: 2,
-        marginRight :20 }} >
+        <View style={{
+          flex: 2,
+          marginRight: 20
+        }} >
           <Text style={{ fontWeight: 'bold' }}>Charactheristic List :</Text>
           <Text style={{ }}>select Charactheristic service from list below</Text>
           <View  style={{ borderColor : 'black', borderStyle : 'solid', borderWidth :2 ,height: 400}} >
 
-        </View>
+          </View>
         </View>
       </View>
 
       <Button onPress={aClick} title={"select 'Battery' Service"} />
       <Button onPress={bCLick} title={"select 'BatteryLevel' Characteristic"} />
       <Button onPress={cCLick} title={"subscribe changes"} />
- 
-      
+
+
     </View>
     // <View style={{ padding: 10, flex: 1 }}>
     //   
