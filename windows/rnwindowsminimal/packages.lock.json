@@ -12,7 +12,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -32,15 +32,16 @@
         "resolved": "13.0.1",
         "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
       },
-      "boost": {
-        "type": "Transitive",
-        "resolved": "1.76.0",
-        "contentHash": "p+w3YvNdXL8Cu9Fzrmexssu0tZbWxuf6ywsQqHjDlKFE5ojXHof1HIyMC3zDLfLnh80dIeFcEUAuR2Asg/XHRA=="
+      "ReactNative.Hermes.Windows": {
+        "type": "Direct",
+        "requested": "[0.11.0-ms.2, )",
+        "resolved": "0.11.0-ms.2",
+        "contentHash": "7KGeDHh4QR4ua5+aSNAfuhj1sF2PBJbTHJ9m520xo1GZZRW4cxJlyNDNjW5t/sFGeHWw/Uhs7ZrWE2maL9BOEw=="
       },
       "Microsoft.Net.Native.Compiler": {
         "type": "Transitive",
         "resolved": "2.2.11-rel-30601-02",
-        "contentHash": "CSL2oqpWB4cQ32W6ELPqZDuKGT4kNKSfw7NFAZJjK1eJk+LwkZwb7hiib0IxmrI/v4hpWTx4yk9Npki6Fjvv1w==",
+        "contentHash": "8Gh7R/CN5FC2eHJkZq0yEcuXiap97TyT58Lvo1f806QD44u9J9LFagljj+Sznl0wg4Nx+lZq/qvuYrArYiFGXg==",
         "dependencies": {
           "runtime.win10-arm.Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
           "runtime.win10-arm64.Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -51,7 +52,7 @@
       "Microsoft.Net.UWPCoreRuntimeSdk": {
         "type": "Transitive",
         "resolved": "2.2.13",
-        "contentHash": "VAuSVkrhFRg3YdZlUMVYP2DXg1EEjpg8SP7zUa1ZDblRRwCYA8aV032RNDyR5ORMJMzmvK6sH6TB5VeZt2u6TQ==",
+        "contentHash": "hSf15sjlRmQlkX1ty1i3WB2YkPgo8S+WbYcImRQIS4c69+AtGQ9W40NaZHM8IZJnil9Wr1RsmkzIhjT4LrrjwQ==",
         "dependencies": {
           "runtime.win10-arm.Microsoft.Net.UWPCoreRuntimeSdk": "2.2.13",
           "runtime.win10-x64.Microsoft.Net.UWPCoreRuntimeSdk": "2.2.13",
@@ -63,11 +64,6 @@
         "resolved": "2.1.0",
         "contentHash": "ok+RPAtESz/9MUXeIEz6Lv5XAGQsaNmEYXMsgVALj4D7kqC8gveKWXWXbufLySR2fWrwZf8smyN5RmHu0e4BHA=="
       },
-      "Microsoft.Windows.CppWinRT": {
-        "type": "Transitive",
-        "resolved": "2.0.211028.7",
-        "contentHash": "JBGI0c3WLoU6aYJRy9Qo0MLDQfObEp+d4nrhR95iyzf7+HOgjRunHDp/6eGFREd7xq3OI1mll9ecJrMfzBvlyg=="
-      },
       "NETStandard.Library": {
         "type": "Transitive",
         "resolved": "2.0.3",
@@ -76,15 +72,10 @@
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
-      "ReactNative.Hermes.Windows": {
-        "type": "Transitive",
-        "resolved": "0.11.0-ms.2",
-        "contentHash": "7KGeDHh4QR4ua5+aSNAfuhj1sF2PBJbTHJ9m520xo1GZZRW4cxJlyNDNjW5t/sFGeHWw/Uhs7ZrWE2maL9BOEw=="
-      },
       "runtime.win10-arm.Microsoft.Net.Native.Compiler": {
         "type": "Transitive",
         "resolved": "2.2.11-rel-30601-02",
-        "contentHash": "acXQ096PcghMPtVn7gtQd/1C5Q9phqD/IYpBeMJabzTLC6+TISLvXowLDZg4Xeja/Z+OWNccYjuofavVlgDqEw==",
+        "contentHash": "sbfRiIa+wkFW2IKwg30qpp3j+W4/JZii4K0ko3/0Ybqc/IEnYO0TrHwiU8HKDSu30IKYUZOjlAi7L6vQiYGpHg==",
         "dependencies": {
           "runtime.win10-arm.Microsoft.Net.Native.SharedLibrary": "2.2.8-rel-30601-02"
         }
@@ -92,17 +83,17 @@
       "runtime.win10-arm.Microsoft.Net.Native.SharedLibrary": {
         "type": "Transitive",
         "resolved": "2.2.8-rel-30601-02",
-        "contentHash": "f4OQx2bdMLn0WVFLlo78BELWbC83fy66oSDVdq1s7WZJjuhDT72Tc+Jk4AXRQYCvF4qDFP1YM2qKpG//C3dDDg=="
+        "contentHash": "gEMZbttShuWWHITe2tJynj9VUm8Wn9ZsPO3wXjbSDKXmgNENitHMaVj0vtvM/hpRqoFrp0JJzKTNHZ/Q1jrYNg=="
       },
       "runtime.win10-arm.Microsoft.Net.UWPCoreRuntimeSdk": {
         "type": "Transitive",
         "resolved": "2.2.13",
-        "contentHash": "+89RsG/qiYOsI+SteXSIwrPV3wVsKeXBvUweo0bNvrZnzWiT0XB3km916ccJ8HE8NcrN18vcOHeGi0CKj4//BA=="
+        "contentHash": "sOl/r5ySp7Mv+EWb0ZX2N/j/A7Y1AMkNZ0oRzjvTmIShMqUODR6QnBzGG/bmsSZQ3llQgwDa0MiAHVjXHKOHUA=="
       },
       "runtime.win10-arm64.Microsoft.Net.Native.Compiler": {
         "type": "Transitive",
         "resolved": "2.2.11-rel-30601-02",
-        "contentHash": "XVogy0xH4N08OZmx7JZE8HdpUz7jI4FI4zmp31eeNgKszIGc0+scoWL1msSfg2GuFPg6BTdER4Xf7TVkHMGncw==",
+        "contentHash": "Ujs/ites15TOfNS3cdkVf9y5sxZEDdDRhgig6H4sa2Ba3vESQstm96xPisy6siz0s3z0F1Sxb8IQHe5LXECyQw==",
         "dependencies": {
           "runtime.win10-arm64.Microsoft.Net.Native.SharedLibrary": "2.2.8-rel-30601-02"
         }
@@ -110,12 +101,12 @@
       "runtime.win10-arm64.Microsoft.Net.Native.SharedLibrary": {
         "type": "Transitive",
         "resolved": "2.2.8-rel-30601-02",
-        "contentHash": "+JBFpA1GYAAj66Fidf9gxB4hulRcrm+wHAOglUU03JNZAmkW8RcraGcxjNs3xvRphiAiE/SELQMLs1J3FkhVpg=="
+        "contentHash": "vq3cCwA1+C0g0nq3xJaLQmdWKw2wybnDTB9kn2YM4gX7ftGegfGNOOlVfw1acG2Rwb2ii8LLPDlTDMxeZwcTsA=="
       },
       "runtime.win10-x64.Microsoft.Net.Native.Compiler": {
         "type": "Transitive",
         "resolved": "2.2.11-rel-30601-02",
-        "contentHash": "tSG0yZavxMu2jwVGLQ9swhgCbet9OYdey/r2PC9+EDs23ZdokMR40wvunVTIKaug99tKb1R4z41rTMf0wuwwdQ==",
+        "contentHash": "0SDO08wd/Q/Vnhv2m0Cix7RI2oLrmroHb2+30iqXk1xwyCIeLlMW3Dc2X3+c0d2IG82y+4Yr/6BindgPUcMMWQ==",
         "dependencies": {
           "runtime.win10-x64.Microsoft.Net.Native.SharedLibrary": "2.2.8-rel-30601-02"
         }
@@ -123,17 +114,17 @@
       "runtime.win10-x64.Microsoft.Net.Native.SharedLibrary": {
         "type": "Transitive",
         "resolved": "2.2.8-rel-30601-02",
-        "contentHash": "2ihCjdqatqDGT2TF5I1krKNiOf5LaCYfDEGtXtawnLG0BoSOBTxCfLU7ksVmyffQpFIyZLrJcaCgO+NdxROopQ=="
+        "contentHash": "6grSKbRCt3JJSfHY5jQA6uB02YukM+f3xdC0024S30gZLJMhsIA5BtEXlInh/5kR/WwdQrDWwEIh2TznqOmp+A=="
       },
       "runtime.win10-x64.Microsoft.Net.UWPCoreRuntimeSdk": {
         "type": "Transitive",
         "resolved": "2.2.13",
-        "contentHash": "NbLdfB0C1+tIGbD+pWEUoCgvp4dLdPfl+BoT1GiP9nZokufF5+ymXO1zYXvGFtnaLpDLezPCDZuflwU9O32f0g=="
+        "contentHash": "yLxeLxdwz6oZ91OtKCyNiHpk+vE7Gj7kSWFtz1Iw7dL5GCMsAF+Cbksy8IlAi3rkti2GzFb3y0lNLl/qW136sg=="
       },
       "runtime.win10-x86.Microsoft.Net.Native.Compiler": {
         "type": "Transitive",
         "resolved": "2.2.11-rel-30601-02",
-        "contentHash": "X8XI1ceCCiI2tAEH/HhWjRk4/cvs+VryZnhWqdEI8FtxCyfR+MD8KjLmLPNUou9i05Az9J8J7tMP9tEEWu/Faw==",
+        "contentHash": "BkipJxx/xO+UNkBjHMl4VKnL8QPVusMAtguJzS0Cxix7HLZ06/45gNDedDaLmTMd8Rnesv674HUZDdeuDhMZ8Q==",
         "dependencies": {
           "runtime.win10-x86.Microsoft.Net.Native.SharedLibrary": "2.2.8-rel-30601-02"
         }
@@ -141,12 +132,12 @@
       "runtime.win10-x86.Microsoft.Net.Native.SharedLibrary": {
         "type": "Transitive",
         "resolved": "2.2.8-rel-30601-02",
-        "contentHash": "11CBdoWSpHwniFYiWccenWB2XUSPmGqbSoNW4bg4gsIJIg9t+H32tbcumYMZdwPBJKA3A1uc1+odNsJvNqDTyg=="
+        "contentHash": "AHm49HQodrFrp4iN3ckjmP1Q5TJLU/Lq3zO66Gbp4EW+XuMxyPrEsqW0DRE7Hrd0I9uvBAGJM2S5hDEvgsEP2w=="
       },
       "runtime.win10-x86.Microsoft.Net.UWPCoreRuntimeSdk": {
         "type": "Transitive",
         "resolved": "2.2.13",
-        "contentHash": "gWVrT/BG5u6CWdpew1WKQT2ON5H7aWsMIhjTJnLKUUq0g7j8AHIHFEtEZwbFwkC1ZtBcFqW0RQEbDELTvRw2dQ=="
+        "contentHash": "p2f9jwmy5NrUkTj/hESaXV/53aU57KSjkAFFqQarNJWuYKe2pGUfxQ7uasOOirKblHWaiyma+WWqN8CsGAZckQ=="
       },
       "common": {
         "type": "Project"
@@ -157,7 +148,6 @@
       "folly": {
         "type": "Project",
         "dependencies": {
-          "boost": "1.76.0",
           "fmt": "1.0.0"
         }
       },
@@ -166,11 +156,7 @@
         "dependencies": {
           "Common": "1.0.0",
           "Folly": "1.0.0",
-          "Microsoft.UI.Xaml": "2.7.0",
-          "Microsoft.Windows.CppWinRT": "2.0.211028.7",
-          "ReactCommon": "1.0.0",
-          "ReactNative.Hermes.Windows": "0.11.0-ms.2",
-          "boost": "1.76.0"
+          "ReactCommon": "1.0.0"
         }
       },
       "microsoft.reactnative.managed": {
@@ -183,15 +169,7 @@
       "reactcommon": {
         "type": "Project",
         "dependencies": {
-          "Folly": "1.0.0",
-          "boost": "1.76.0"
-        }
-      },
-      "rnscreens": {
-        "type": "Project",
-        "dependencies": {
-          "Microsoft.ReactNative": "1.0.0",
-          "Microsoft.UI.Xaml": "2.7.0"
+          "Folly": "1.0.0"
         }
       }
     },
@@ -200,7 +178,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -220,7 +198,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -240,7 +218,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -260,7 +238,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -280,7 +258,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -300,7 +278,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",
@@ -320,7 +298,7 @@
         "type": "Direct",
         "requested": "[6.2.13, )",
         "resolved": "6.2.13",
-        "contentHash": "2CrUxOSYSrDPANhySZtBEeGXPlSxDZXASUZfRnUcP3l76hpFpWKfu3mERR/wEYS1BRM+aa3bDgPg4NNs9x13cQ==",
+        "contentHash": "YtvnIYTot2rclwvqNxDCIveKbMXzIFgihDK80YS6MF0gC2iYFzr9PBBWegP3nc80NmQuR5xcMhlHX86O/v7oZw==",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.1.0",
           "Microsoft.Net.Native.Compiler": "2.2.11-rel-30601-02",

@@ -180,7 +180,7 @@ namespace rnwindowsminimal.Bluetooth
             IsConnecting = true;
             if (!await ClearBluetoothLEDeviceAsync())
             {
-                ConnectedDevices.First().GetGattServicesAsync
+                //ConnectedDevices.First().GetGattServicesAsync
                 UserNotification("Error: Unable to reset state, try again.", (int)NotifyType.ErrorMessage);
                 return JsonConvert.SerializeObject(response);
             }
