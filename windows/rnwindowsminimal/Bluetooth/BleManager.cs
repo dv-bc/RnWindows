@@ -1,6 +1,5 @@
 ﻿using Microsoft.ReactNative.Managed;
 using Newtonsoft.Json;
-using rnwindowsminimal.Bluetooth.Helpers;
 using rnwindowsminimal.Constants;
 using rnwindowsminimal.Models;
 using System;
@@ -29,7 +28,7 @@ namespace rnwindowsminimal.Bluetooth
     [ReactModule]
     public class BleManager
     {
-               
+
 
         #region React Events
 
@@ -45,12 +44,15 @@ namespace rnwindowsminimal.Bluetooth
         [ReactEvent]
         public Action<bool> IsConnectingEvent { get; set; }
 
+
         [ReactEvent]
         public Action<string> KnownDeviceUpdated { get; set; }
 
         [ReactEvent]
         public Action<string> ConnectedDevicesUpdated { get; set; }
 
+        [ReactEvent]
+        public Action<string> DeviceRemoved { get; set; }
 
         [ReactEvent]
         public Action<string> DeviceDisconnect { get; set; }
@@ -79,7 +81,7 @@ namespace rnwindowsminimal.Bluetooth
 
         private static System.Timers.Timer Timer;
 
-        public static List<BluetoothLEDevice>
+
 
 
 
@@ -139,11 +141,11 @@ namespace rnwindowsminimal.Bluetooth
 
         private ObservableCollection<BleDevice> knownDevices = new ObservableCollection<BleDevice>();
         private List<DeviceInformation> UnknownDevices = new List<DeviceInformation>();
-        private List<BluetoothLEDevice> ConnectedDevices = new List<BleDevice>();
+        private List<BleDevice> ConnectedDevices = new List<BleDevice>();
+        private Dictionary<string, GattDeviceServicesResult> DeviceServices = new Dictionary<string, GattDeviceServicesResult>();
 
-        
 
-        
+
         private GattDeviceService SelectedGattDeviceServices;
         private GattCharacteristic SelectedCharacteristic;
 
@@ -189,7 +191,7 @@ namespace rnwindowsminimal.Bluetooth
             {
                 // BT_Code: BluetoothLEDevice.FromIdAsync must be called from a UI thread because it may prompt for consent.
                 bluetoothLeDevice = await BluetoothLEDevice.FromIdAsync(deviceId);
-                
+
                 if (bluetoothLeDevice == null)
                 {
                     var message = "Failed to connect to device.";
@@ -212,22 +214,26 @@ namespace rnwindowsminimal.Bluetooth
                 if (result.Status == GattCommunicationStatus.Success)
                 {
                     response.Valid = true;
-                    var services = result.Services;
-                    var bleDevice = new BleDevice(bluetoothLeDevice.DeviceInformation);
-
-                    if (!ConnectedDevices.Any(x => x.Id == bleDevice.Id))
+                    if (!ConnectedDevices.Any(x => x.Id == bluetoothLeDevice.DeviceInformation.Id))
                     {
+                        var bleDevice = new BleDevice(bluetoothLeDevice.DeviceInformation, bluetoothLeDevice, result);
                         ConnectedDevices.Add(bleDevice);
-                        ConnectedDevicesUpdated(JsonConvert.SerializeObject(ConnectedDevices));
-                        UserNotification(String.Format("Found {0} services", services.Count), (int)NotifyType.StatusMessage);
+                        UserNotification(String.Format($"Connected to device {bluetoothLeDevice.DeviceInformation.Name}, found {result.Services.Count} services"), (int)NotifyType.StatusMessage);
+                    }
+                    else
+                    {
+                        response.Message.Add($"Device {bluetoothLeDevice.DeviceInformation.Name} already connected");
+                        UserNotification(String.Format($"Device {bluetoothLeDevice.DeviceInformation.Name} already connected"), (int)NotifyType.StatusMessage);
                     }
                 }
                 else
                 {
+
                     UserNotification("Device unreachable", (int)NotifyType.ErrorMessage);
                 }
             }
             IsConnecting = false;
+            ConnectedDevicesUpdated(JsonConvert.SerializeObject(ConnectedDevices));
             return JsonConvert.SerializeObject(response);
         }
 
@@ -252,11 +258,11 @@ namespace rnwindowsminimal.Bluetooth
             string aqsAllBluetoothLEDevices = "(System.Devices.Aep.ProtocolId:=\"{bb7bb05e-5972-42b5-94fc-76eaa7084d49}\") AND (System.ItemNameDisplay:~~\"MD\")";
             this.IsScanning = true;
             var trequestedAqsFilterss = "(System.ItemNameDisplay:~~\"MD\" OR System.ItemNameDisplay:~~\"B\") AND (System.Devices.Aep.Bluetooth.Le.IsConnectable:=System.StructuredQueryType.Boolean#True )";
-        deviceWatcher =
-                    DeviceInformation.CreateWatcher(
-                        aqsAllBluetoothLEDevices,
-                        requestedProperties,
-                        DeviceInformationKind.AssociationEndpoint);
+            deviceWatcher =
+                        DeviceInformation.CreateWatcher(
+                            aqsAllBluetoothLEDevices,
+                            requestedProperties,
+                            DeviceInformationKind.AssociationEndpoint);
 
             // Register event handlers before starting the watcher.
             deviceWatcher.Added += DeviceWatcher_Added;
@@ -274,8 +280,8 @@ namespace rnwindowsminimal.Bluetooth
             // use the BluetoothLEAdvertisementWatcher runtime class. See the BluetoothAdvertisement
             // sample for an example.
             deviceWatcher.Start();
-            
-            
+
+
             // Create a timer with a two second interval.
             Timer = new System.Timers.Timer(2000);
             Timer.Elapsed += OnTimedEvent;
@@ -344,35 +350,35 @@ namespace rnwindowsminimal.Bluetooth
         }
 
         private async void DeviceWatcher_Added(DeviceWatcher sender, DeviceInformation deviceInfo)
-        {            
-                Debug.WriteLine(String.Format("Added {0}{1}", deviceInfo.Id, deviceInfo.Name));
+        {
+            Debug.WriteLine(String.Format("Added {0}{1}", deviceInfo.Id, deviceInfo.Name));
 
-                //if (deviceInfo.Name.StartsWith(SensorHardwareTypeNames.MDE) ||
-                //    deviceInfo.Name.StartsWith(SensorHardwareTypeNames.MDD) ||
-                //    deviceInfo.Name.StartsWith(SensorHardwareTypeNames.MDM))
-                //{
-                // Protect against race condition if the task runs after the app stopped the deviceWatcher.
-                if (sender == deviceWatcher)
+            //if (deviceInfo.Name.StartsWith(SensorHardwareTypeNames.MDE) ||
+            //    deviceInfo.Name.StartsWith(SensorHardwareTypeNames.MDD) ||
+            //    deviceInfo.Name.StartsWith(SensorHardwareTypeNames.MDM))
+            //{
+            // Protect against race condition if the task runs after the app stopped the deviceWatcher.
+            if (sender == deviceWatcher)
+            {
+                // Make sure device isn't already present in the list.
+                if (FindBleDevice(deviceInfo.Id) == null)
                 {
-                    // Make sure device isn't already present in the list.
-                    if (FindBleDevice(deviceInfo.Id) == null)
+                    if (deviceInfo.Name != string.Empty)
                     {
-                        if (deviceInfo.Name != string.Empty)
-                        {
-                            var bleDevice = new BleDevice(deviceInfo);                            
-                            // If device has a friendly name display it immediately.
-                            knownDevices.Add(bleDevice);
-                            KnownDevicesUpdated = true;
+                        var bleDevice = new BleDevice(deviceInfo);
+                        // If device has a friendly name display it immediately.
+                        knownDevices.Add(bleDevice);
+                        KnownDevicesUpdated = true;
                     }
-                        else
-                        {
-                            // Add it to a list in case the name gets updated later.
-                            UnknownDevices.Add(deviceInfo);
-                        }
+                    else
+                    {
+                        // Add it to a list in case the name gets updated later.
+                        UnknownDevices.Add(deviceInfo);
                     }
                 }
-                //}
-            
+            }
+            //}
+
         }
 
         private async void DeviceWatcher_Updated(DeviceWatcher sender, DeviceInformationUpdate deviceInfoUpdate)
@@ -411,6 +417,32 @@ namespace rnwindowsminimal.Bluetooth
             }
         }
 
+        private async void DeviceWatcher_Removed(DeviceWatcher sender, DeviceInformationUpdate deviceInfoUpdate)
+        {
+            lock (this)
+            {
+                Debug.WriteLine(String.Format("Removed {0}{1}", deviceInfoUpdate.Id, ""));
+
+                // Protect against race condition if the task runs after the app stopped the deviceWatcher.
+                if (sender == deviceWatcher)
+                {
+                    // Find the corresponding DeviceInformation in the collection and remove it.
+                    var bleDevice = FindBleDevice(deviceInfoUpdate.Id);
+                    if (bleDevice != null)
+                    {
+                        knownDevices.Remove(bleDevice);
+                        DeviceRemoved(JsonConvert.SerializeObject(bleDevice));
+                    }
+
+                    DeviceInformation deviceInfo = FindUnknownDevices(deviceInfoUpdate.Id);
+                    if (deviceInfo != null)
+                    {
+                        UnknownDevices.Remove(deviceInfo);
+                    }
+                }
+            }
+        }
+
         private async void devicedisconnect(DeviceWatcher sender, DeviceInformationUpdate deviceInfoUpdate)
         {
             lock (this)
@@ -437,7 +469,7 @@ namespace rnwindowsminimal.Bluetooth
             }
         }
 
-        private async void DeviceWatcher_EnumerationCompleted(DeviceWatcher sender, object e)
+        private void DeviceWatcher_EnumerationCompleted(DeviceWatcher sender, object e)
         {
             // Protect against race condition if the task runs after the app stopped the deviceWatcher.
             if (sender == deviceWatcher)
@@ -632,76 +664,40 @@ namespace rnwindowsminimal.Bluetooth
         #endregion Enumerating Services
 
 
-        [ReactMethod("ReadCharacteristic")]
-        public async Task<string> ReadCharacteristic(string deviceId, string serviceId, string characteristicId)
+        [ReactMethod("GetBleCharacteristic")]
+        public async Task<string> GetBleCharacteristic(string deviceId, string serviceId)
         {
             var response = new ServiceResponse<string>();
-            var selectedDevice = ConnectedDevices.FirstOrDefault(x => x.DeviceInformation.Id == deviceId);
+            var selectedDevice = ConnectedDevices.Where(x => x.Services.Any(y => y.DeviceId == deviceId)).FirstOrDefault();
 
-            // Note: BluetoothLEDevice.GattServices property will return an empty list for unpaired devices. For all uses we recommend using the GetGattServicesAsync method.
-            // BT_Code: GetGattServicesAsync returns a list of all the supported services of the device (even if it's not paired to the system).
-            // If the services supported by the device are expected to change during BT usage, subscribe to the GattServicesChanged event.
-            GattDeviceServicesResult gattDeviceServices = await bluetoothLeDevice.GetGattServicesAsync(BluetoothCacheMode.Uncached);
-            if (selectedDevice == null)
+            // V6C only
+            if (selectedDevice != null &&
+                (selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDE) ||
+                selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDD) ||
+                selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDM)))
             {
-                response.Message.Add("Device is not yet connected");
-                return JsonConvert.SerializeObject(response);
-            }          
+                // THIS IS V6C RETURNS hardcoded characteristic
 
-            var service = gattDeviceServices.Services.Select(x => new { Obj = x, Name = DisplayHelpers.GetServiceName(x) }).FirstOrDefault(y => y.Name == serviceId);
-            if (service == null)
-            {
-                response.Message.Add("Error accessing service.");
-                UserNotification("Error accessing service.", (int)NotifyType.ErrorMessage);
-                return JsonConvert.SerializeObject(response);
-            }
-
-            var charResponse = await service.Obj.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
-            if (charResponse.Status == GattCommunicationStatus.Success)
-            {
-                var characteristics = charResponse.Characteristics;
-                var selectedCharacteristic = characteristics.Select(x => new { Obj = x, Name = DisplayHelpers.GetCharacteristicName(x) }).FirstOrDefault(y => y.Name == characteristicId);
-                if (selectedCharacteristic == null)
+                var service = selectedDevice.Services.FirstOrDefault(x => x.UUid == serviceId);
+                if (service != null)
                 {
-                    response.Message.Add("Error accessing characteristics.");
-                    UserNotification("Error accessing characteristics.", (int)NotifyType.ErrorMessage);
-                    return JsonConvert.SerializeObject(response);
+                    return JsonConvert.SerializeObject(await service.GetCharacteristic());
                 }
-                // Get all the child descriptors of a characteristics. Use the cache mode to specify uncached descriptors only 
-                // and the new Async functions to get the descriptors of unpaired devices as well. 
-                var result = await selectedCharacteristic.Obj.GetDescriptorsAsync(BluetoothCacheMode.Uncached);
-                if (result.Status != GattCommunicationStatus.Success)
+                else
                 {
-                    UserNotification("Descriptor read failure: " + result.Status.ToString(), (int)NotifyType.ErrorMessage);
+                    response.Valid = false;
+                    response.Message.Add("Cannot find device service");
                 }
 
-                // BT_Code: There's no need to access presentation format unless there's at least one. 
-                presentationFormat = null;
-                if (selectedCharacteristic.Obj.PresentationFormats.Count > 0)
-                {
-
-                    if (selectedCharacteristic.Obj.PresentationFormats.Count.Equals(1))
-                    {
-                        // Get the presentation format since there's only one way of presenting it
-                        presentationFormat = selectedCharacteristic.Obj.PresentationFormats[0];
-                    }
-                    else
-                    {
-                        // It's difficult to figure out how to split up a characteristic and encode its different parts properly.
-                        // In this case, we'll just encode the whole thing to a string to make it easy to print out.
-                    }
-                    response.Content = "123";
-                    response.Valid = true;
-                    return JsonConvert.SerializeObject(response);
-                }
             }
             else
             {
-                UserNotification("Error accessing service.", (int)NotifyType.ErrorMessage);
-
-                // On error, act as if there are no characteristics.
-
+                response.Valid = false;
+                response.Message.Add("Cannot find device");
             }
+
+
+
             return JsonConvert.SerializeObject(response);
 
         }

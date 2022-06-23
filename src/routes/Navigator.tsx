@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Button, View } from 'react-native';
 import BleManager from "./BluetoothManager";
 import HomeScreen from "./Home";
+import Camera from "./Camera";
+import DetailsScreen from "./Details";
 
 export default function Navigator() {
 
@@ -10,13 +12,16 @@ export default function Navigator() {
 
     const renderNav = () => {
         return (
-            <View>
-                <Button title={"Home"} onPress={() => {
-                    setPage('home');
-                }} />
-                <Button title={"Ble"} onPress={() => {
-                    setPage('ble');
-                }} />
+            <View style={{ padding: 20, flexDirection: "row" }}>
+
+                <View style={{ flex: 1 }}>
+                    <Button title={"Ble"} onPress={() => { setPage('ble'); }} />
+                    <Button title={"Camera"} onPress={() => { setPage('camera'); }} />
+                </View>
+                <View style={{ flex: 1 }}>
+                    <Button title={"Details"} onPress={() => { setPage('Details'); }} />
+                </View>
+
             </View>
         )
     }
@@ -24,12 +29,14 @@ export default function Navigator() {
 
     const renderPage = () => {
         switch (page) {
-            case 'home':
-                return <HomeScreen />
+            case 'Details':
+                return <DetailsScreen />
             case 'ble':
                 return <BleManager />
+            case 'camera':
+                return <Camera />
             default:
-                return <HomeScreen />
+                return <BleManager />
         }
     }
 
