@@ -178,7 +178,7 @@ namespace rnwindowsminimal.Bluetooth
         [ReactMethod("Connect")]
         public async Task<string> ConnectToDevice(string deviceId)
         {
-            var response = new ServiceResponse();
+            var response = new ServiceResponse<BleDevice>();
             IsConnecting = true;
             if (!await ClearBluetoothLEDeviceAsync())
             {
@@ -214,17 +214,20 @@ namespace rnwindowsminimal.Bluetooth
                 if (result.Status == GattCommunicationStatus.Success)
                 {
                     response.Valid = true;
-                    if (!ConnectedDevices.Any(x => x.Id == bluetoothLeDevice.DeviceInformation.Id))
+                    var device = ConnectedDevices.FirstOrDefault(x => x.Id == bluetoothLeDevice.DeviceInformation.Id);
+                    if (device == null)
                     {
-                        var bleDevice = new BleDevice(bluetoothLeDevice.DeviceInformation, bluetoothLeDevice, result);
-                        ConnectedDevices.Add(bleDevice);
-                        UserNotification(String.Format($"Connected to device {bluetoothLeDevice.DeviceInformation.Name}, found {result.Services.Count} services"), (int)NotifyType.StatusMessage);
+                        device = new BleDevice(bluetoothLeDevice.DeviceInformation, bluetoothLeDevice, result);
+                        ConnectedDevices.Add(device);
+                        UserNotification(String.Format($"Connected to device {device.Name}, found {device.Services.Count} services"), (int)NotifyType.StatusMessage);
+
                     }
                     else
                     {
                         response.Message.Add($"Device {bluetoothLeDevice.DeviceInformation.Name} already connected");
                         UserNotification(String.Format($"Device {bluetoothLeDevice.DeviceInformation.Name} already connected"), (int)NotifyType.StatusMessage);
                     }
+                    response.Content = device;
                 }
                 else
                 {
@@ -667,28 +670,47 @@ namespace rnwindowsminimal.Bluetooth
         [ReactMethod("GetBleCharacteristic")]
         public async Task<string> GetBleCharacteristic(string deviceId, string serviceId)
         {
-            var response = new ServiceResponse<string>();
+            var response = new ServiceResponse<List<BleDeviceCharacteristic>>();
             var selectedDevice = ConnectedDevices.Where(x => x.Services.Any(y => y.DeviceId == deviceId)).FirstOrDefault();
 
             // V6C only
-            if (selectedDevice != null &&
-                (selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDE) ||
-                selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDD) ||
-                selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDM)))
+            if (selectedDevice != null)
             {
-                // THIS IS V6C RETURNS hardcoded characteristic
-
                 var service = selectedDevice.Services.FirstOrDefault(x => x.UUid == serviceId);
-                if (service != null)
-                {
-                    return JsonConvert.SerializeObject(await service.GetCharacteristic());
-                }
-                else
+                if (service == null)
                 {
                     response.Valid = false;
                     response.Message.Add("Cannot find device service");
                 }
+                try
+                {
+                    // THIS IS V6C RETURNS hardcoded characteristic
+                    if ((selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDE) ||
+                     selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDD) ||
+                     selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDM)) && service.UUid == V6CServiceUuId.Custom.UUid)
+                    {
+                        var accessStatus = await service.Service.RequestAccessAsync();
+                        if (accessStatus == DeviceAccessStatus.Allowed)
+                        {
+                            response.Content = V6CCharacteristic.List.Select(x => new BleDeviceCharacteristic
+                            {
+                                Name = x.Name,
+                                Uuid = x.UUid,
+                                DeviceId = deviceId,
+                                ServiceId = serviceId
+                            }).ToList();
 
+                            response.Valid = true;
+                            return JsonConvert.SerializeObject(response);
+                        }
+                    }
+                    return JsonConvert.SerializeObject(await service.GetCharacteristicAsync());
+                }
+                catch (Exception ex)
+                {
+                    response.Valid = false;
+                    response.Message.Add("Cannot find device, device may be disconnected");
+                }
             }
             else
             {
@@ -702,6 +724,101 @@ namespace rnwindowsminimal.Bluetooth
 
         }
 
+
+        [ReactMethod("GetCharacteristicDescriptor")]
+        public async Task<string> GetCharacteristicDescriptor(string deviceId, string serviceId, string characteristicUuid)
+        {
+            var resp = new ServiceResponse<List<string>>();
+            var selectedDevice = ConnectedDevices.FirstOrDefault(x => x.Id == deviceId);
+
+            if (selectedDevice != null)
+            {
+                var service = selectedDevice.Services.FirstOrDefault(x => x.UUid == serviceId);
+                if (service == null)
+                {
+                    resp.Valid = false;
+                    resp.Message.Add("Cannot find services");
+                }
+                try
+                {
+                    if (service.BleCharacteristics == null)
+                        await service.GetCharacteristicAsync();
+                    var selectedCharacteristic = service.BleCharacteristics.FirstOrDefault(x => x.Uuid.ToString() == characteristicUuid);
+
+                    if (selectedCharacteristic != null)
+                    {
+                        try
+                        {
+                            var result = await selectedCharacteristic.GetDescriptorsAsync(BluetoothCacheMode.Uncached);
+                            if (result.Status != GattCommunicationStatus.Success)
+                            {
+                                resp.Message.Add("Descriptor read failure: " + result.Status.ToString());
+                                return JsonConvert.SerializeObject(resp);
+                            }
+                            GattPresentationFormat presentationFormat;
+                            // BT_Code: There's no need to access presentation format unless there's at least one. 
+                            presentationFormat = null;
+                            if (selectedCharacteristic.PresentationFormats.Count > 0)
+                            {
+
+                                if (selectedCharacteristic.PresentationFormats.Count.Equals(1))
+                                {
+                                    // Get the presentation format since there's only one way of presenting it
+                                    presentationFormat = selectedCharacteristic.PresentationFormats[0];
+                                }
+                                else
+                                {
+                                    // It's difficult to figure out how to split up a characteristic and encode its different parts properly.
+                                    // In this case, we'll just encode the whole thing to a string to make it easy to print out.
+                                }
+                            }
+
+                            var characteristicDescriptors = new List<KeyValuePair<string, uint>>();
+                            // Enable/disable operations based on the GattCharacteristicProperties.
+                            foreach (var item in CharacteristicPropertiesEnum.List)
+                            {
+                                var gattCharProp = (GattCharacteristicProperties)item.CharacteristicValue;
+                                if (selectedCharacteristic.CharacteristicProperties.HasFlag(gattCharProp))
+                                {
+                                    characteristicDescriptors.Add(new KeyValuePair<string, uint>(item.Name, item.CharacteristicValue));
+                                }
+                            }
+                            if (characteristicDescriptors.Count > 1 && characteristicDescriptors.Any(x => x.Value == CharacteristicPropertiesEnum.None.CharacteristicValue))
+                            {
+                               characteristicDescriptors.Remove(characteristicDescriptors.FirstOrDefault(x => x.Value == CharacteristicPropertiesEnum.None.CharacteristicValue));
+                            }
+                            resp.Valid = true;
+                            resp.Content = characteristicDescriptors.Select(x=>x.Key).ToList();
+
+                        }
+                        catch (Exception ex)
+                        {
+                            resp.Message.Add($"Error, {ex.Message}");
+                            // On error, act as if there are no characteristics.
+                            resp.Content = null;
+                        }
+                        return JsonConvert.SerializeObject(resp);
+                    } 
+                    resp.Valid = false;
+                    resp.Message.Add("Cannot find characteristic");
+                }
+                catch (Exception ex)
+                {
+                    resp.Valid = false;
+                    resp.Message.Add("Cannot find device");
+                }
+            }
+            else
+            {
+                resp.Valid = false;
+                resp.Message.Add("Cannot find device");
+            }
+
+
+
+            return JsonConvert.SerializeObject(resp);
+
+        }
 
         [ReactMethod("SubscribeChanges")]
         public async void ValueChangedSubscribeToggle_Click()

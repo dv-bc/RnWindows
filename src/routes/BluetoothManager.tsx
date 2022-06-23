@@ -52,7 +52,7 @@ interface BleServices {
 }
 
 interface BleServiceCharactheristic {
-  Id: string;
+  Uuid: string;
   Name: string;
 }
 
@@ -67,6 +67,7 @@ export default function BleManager() {
   const [ConnectedDevice, setConnectedDevice] = useState([]);
   const [DeviceService, setDeviceService] = useState([]);
   const [DeviceCharacteristic, setDeviceCharacteristic] = useState([]);
+  const [CharacteristicDescriptor, setCharacteristicDescriptor] = useState<string[]>([]);
 
   console.log("current knownDevice :" + KnownDevices);
 
@@ -107,17 +108,13 @@ export default function BleManager() {
   }
 
   function PairDevice(Id: string) {
-    const tempChar: Charactheristic[] = [];
+    const tempChar: BleServices[] = [];
     NativeModules.BleManager.Connect(Id)
       .then((data: string) => {
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
           alert("Successfully Connected");
-          resp.Content.forEach(el => {
-            tempChar.push({ Id: el.Id, Name: el.Name })
-          });
-
-          setCharactheristic([tempChar])
+          setDeviceService(resp.Content.Services);
         }
         else if (resp.Valid) {
           alert(resp.Message.join());
@@ -194,14 +191,10 @@ export default function BleManager() {
   function GetServiceCharacteristic(deviceId: string, serviceId: string) {
     NativeModules.BleManager.GetBleCharacteristic(deviceId, serviceId)
       .then((data: string) => {
+        
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
-          alert("Successfully Connected");
-          resp.Content.forEach(el => {
-            tempChar.push({ Id: el.Id, Name: el.Name })
-          });
-
-          setCharactheristic([tempChar])
+          setDeviceCharacteristic(resp.Content)
         }
         else if (resp.Valid) {
           alert(resp.Message.join());
@@ -213,10 +206,36 @@ export default function BleManager() {
 
   }
 
+  function GetCharacteristicDescriptor(deviceId: string, serviceId: string, characteristicId: string) {
+    NativeModules.BleManager.GetCharacteristicDescriptor(deviceId, serviceId, characteristicId)
+      .then((data: string) => {
+        
+        var resp = JSON.parse(data);
+        if (resp.Valid && resp.Content != null) {
+          setCharacteristicDescriptor(resp.Content)
+        }
+        else if (resp.Valid) {
+          alert(resp.Message.join());
+        }
+        else {
+          alert("Fail to get Characteristc descriptor");
+        }
+      });;
+
+  }
+
+  
+
   //
   const Item = ({ item, onPress, backgroundColor, textColor, fontSize }) => (
-    <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
-      <Text style={[styles.title, textColor, fontSize]}>{item.Name}</Text>
+    <TouchableOpacity onPress={onPress} style={{
+      ...styles.item, 
+      backgroundColor:backgroundColor}}>
+      <Text style={{
+        ...styles.title,
+        color: textColor,
+        fontSize:fontSize
+      }}>{item.Name}</Text>
     </TouchableOpacity>
   );
 
@@ -233,7 +252,7 @@ export default function BleManager() {
           onPress={() => PairDevice(item.Id)}
           backgroundColor={{ backgroundColor }}
           textColor={{ color }}
-          fontSize={'7'}
+          fontSize={15}
         />
         <Text>{item.IsConnected}</Text>
       </View>
@@ -241,65 +260,85 @@ export default function BleManager() {
   };
 
   const renderConnectedDevice = (data) => {
-
-    console.log("data", data)
-
+    console.log("Connected device", data)
     const { item, index } = data;
-
-    //const color = item.id === selectedId ? 'white' : 'black';
 
     return (
       <Item
         key={index}
         onPress={() => SetCurrentDeviceService(item.Id)}
         item={item}
-        backgroundColor={"#f9c2ff"}
+        backgroundColor={'#ffffff'}
         textColor={'black'}
-        fontSize={'7'}
+        fontSize={12}
       />
     );
   };
 
   const renderDeviceService = (data) => {
-
-    console.log("data", data)
-
+    console.log("Services", data)
     const { item, index } = data;
-
-    //const color = item.id === selectedId ? 'white' : 'black';
 
     return (
       <Item
         key={index}
         onPress={() => GetServiceCharacteristic(item.DeviceId, item.UUid)}
         item={item}
-        backgroundColor={"#f9c2ff"}
+        backgroundColor={"#ffffff"}
         textColor={'black'}
-        fontSize={'9'}
+        fontSize={12}
       />
     );
   };
 
   const renderDeviceCharacteristic = (data) => {
-
-    console.log("data", data)
-
+    console.log("Characteristic", data)
     const { item, index } = data;
-
-    //const color = item.id === selectedId ? 'white' : 'black';
 
     return (
       <Item
         key={index}
-        onPress={() => PairDevice(item.Id)}
+        onPress={() => GetCharacteristicDescriptor(item.DeviceId,item.ServiceId, item.Uuid)}
         item={item}
-        backgroundColor={"#f9c2ff"}
+        backgroundColor={"#ffffff"}
         textColor={'black'}
-        fontSize={'9'}
+        fontSize={12}
       />
     );
   };
 
+
+const RenderCharacteristicDescriptor = ({
+  data
+}:{
+  data:string[]
+}) => {
+
+  const renderButtonList = () => {
+    return data.map((s:string,index:number)=>{
+
+      switch(s){
+       case 'Read':
+         return (<Button key={index}title='Read'></Button>);
+         case 'Write':
+          return (<Button key={index}title='Write'></Button>);
+          case 'Subscribe':
+         return (<Button key={index}title='Subscribe'></Button>);  
+       default:
+        return <View key={index} />
+      }
+     
+     });
+  }
+
+
+  return(
+
+    <View>
+      {renderButtonList()}
+    </View>
+  );
+};
 
 
 
@@ -376,7 +415,7 @@ export default function BleManager() {
           </View>
         </View>
         <View style={{
-          flex: 2,
+          flex: 1,
           marginRight: 20
         }} >
           <Text style={{ fontWeight: 'bold' }}>Charactheristic List :</Text>
@@ -390,7 +429,16 @@ export default function BleManager() {
             />
           </View>
         </View>
-
+        <View style={{
+          flex: 1,
+          marginRight: 20
+        }} >
+          <Text style={{ fontWeight: 'bold' }}>characteristic Descriptor :</Text>
+          <Text style={{}}>select characteristic descriptor from list below</Text>
+          <View style={{ borderColor: 'black', borderStyle: 'solid', borderWidth: 2, height: 400 }} >
+            <RenderCharacteristicDescriptor data={CharacteristicDescriptor}></RenderCharacteristicDescriptor>
+          </View>
+        </View>
       </View>
 
 

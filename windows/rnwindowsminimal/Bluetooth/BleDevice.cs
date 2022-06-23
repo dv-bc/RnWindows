@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using rnwindowsminimal.Bluetooth.Helpers;
+using rnwindowsminimal.Constants;
 using rnwindowsminimal.Models;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,10 @@ using Windows.Devices.Enumeration;
 
 public class BleDevice : INotifyPropertyChanged
 {
+    public BleDevice()
+    {
+    }
+
     public BleDevice(DeviceInformation deviceInfoIn)
     {
         DeviceInformation = deviceInfoIn;
@@ -26,7 +31,7 @@ public class BleDevice : INotifyPropertyChanged
         }
         foreach (var service in deviceServices.Services)
         {
-            Services.Add(new BleDeviceServices(service));
+            Services.Add(new BleDeviceServices(service, Id));
         }
     }
 
@@ -37,9 +42,9 @@ public class BleDevice : INotifyPropertyChanged
 
     public List<BleDeviceServices> Services { get; set; }
 
-    public string Id => DeviceInformation.Id;
-    public string Name => DeviceInformation.Name;
-    public bool IsPaired => DeviceInformation.Pairing.IsPaired;
+    public string Id => DeviceInformation?.Id ?? "";
+    public string Name => DeviceInformation?.Name ?? "";
+    public bool? IsPaired => DeviceInformation.Pairing.IsPaired;
 
     public bool? IsConnected
     {
@@ -104,21 +109,18 @@ public class BleDeviceServices
     [JsonIgnore]
     public IReadOnlyList<GattCharacteristic> BleCharacteristics;
 
-    public BleDeviceServices(GattDeviceService gattDeviceService)
+    public BleDeviceServices(GattDeviceService gattDeviceService, string deviceId)
     {
         this.Service = gattDeviceService;
         Name = DisplayHelpers.GetServiceName(Service);
-
-
-        var charList = GetCharacteristic().Result;
-
+        DeviceId = deviceId;
     }
 
-    public string DeviceId => Service.DeviceId;
+    public string DeviceId { get; private set; }
     public string UUid => Service.Uuid.ToString();
     public string Name { get; private set; }
 
-    public async Task<ServiceResponse<List<BleDeviceCharacteristic>>> GetCharacteristic()
+    public async Task<ServiceResponse<List<BleDeviceCharacteristic>>> GetCharacteristicAsync()
     {
         var resp = new ServiceResponse<List<BleDeviceCharacteristic>>();
         try
@@ -131,21 +133,18 @@ public class BleDeviceServices
                     var result = await Service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
                     if (result.Status == GattCommunicationStatus.Success)
                     {
-                        BleCharacteristics = result.Characteristics.ToList();
+                        BleCharacteristics = result.Characteristics;
                     }
                 }
-
-                var characteristics = new List<BleDeviceCharacteristic>();
-                foreach (var item in BleCharacteristics)
+                resp.Valid = true;
+                resp.Content = BleCharacteristics.Select(item => new BleDeviceCharacteristic()
                 {
-                    characteristics.Add(new BleDeviceCharacteristic()
-                    {
-                        Characteristic = item,
-                        Name = DisplayHelpers.GetCharacteristicName(item),
-                        Uuid = item.Uuid.ToString()
-                    });
-                }
-                resp.Content = characteristics;
+                    Characteristic = item,
+                    Name = DisplayHelpers.GetCharacteristicName(item),
+                    Uuid = item.Uuid.ToString(),
+                    DeviceId = DeviceId,
+                    ServiceId = UUid
+                }).ToList();
             }
         }
         catch (Exception ex)
@@ -156,8 +155,6 @@ public class BleDeviceServices
         }
         return resp;
     }
-
-
 }
 
 public class BleDeviceCharacteristic
@@ -167,4 +164,61 @@ public class BleDeviceCharacteristic
     public string Uuid { get; set; }
 
     public string Name { get; set; }
+
+    public string DeviceId { get; set; }
+
+    public string ServiceId { get; set; }
+
+    public async Task<ServiceResponse<List<KeyValuePair<string, uint>>>> GetCharacteristicDescriptorsAsync()
+    {
+        var resp = new ServiceResponse<List<KeyValuePair<string, uint>>>();
+
+        try
+        {
+            var result = await Characteristic.GetDescriptorsAsync(BluetoothCacheMode.Uncached);
+            if (result.Status != GattCommunicationStatus.Success)
+            {
+                resp.Message.Add("Descriptor read failure: " + result.Status.ToString());
+                return resp;
+            }
+            GattPresentationFormat presentationFormat;
+            // BT_Code: There's no need to access presentation format unless there's at least one. 
+            presentationFormat = null;
+            if (Characteristic.PresentationFormats.Count > 0)
+            {
+
+                if (Characteristic.PresentationFormats.Count.Equals(1))
+                {
+                    // Get the presentation format since there's only one way of presenting it
+                    presentationFormat = Characteristic.PresentationFormats[0];
+                }
+                else
+                {
+                    // It's difficult to figure out how to split up a characteristic and encode its different parts properly.
+                    // In this case, we'll just encode the whole thing to a string to make it easy to print out.
+                }
+            }
+
+            var characteristicDescriptors = new List<KeyValuePair<string, uint>>();
+            // Enable/disable operations based on the GattCharacteristicProperties.
+            foreach (var item in CharacteristicPropertiesEnum.List)
+            {
+                var gattCharProp = (GattCharacteristicProperties)item.CharacteristicValue;
+                if (Characteristic.CharacteristicProperties.HasFlag(gattCharProp))
+                {
+                    characteristicDescriptors.Add(new KeyValuePair<string, uint>(item.Name, item.CharacteristicValue));
+                }
+            }
+            resp.Valid = true;
+            resp.Content = characteristicDescriptors;
+
+        }
+        catch (Exception ex)
+        {
+            resp.Message.Add($"Error, {ex.Message}");
+            // On error, act as if there are no characteristics.
+            resp.Content = null;
+        }
+        return resp;
+    }
 }
