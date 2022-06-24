@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace rnwindowsminimal.Bluetooth.Helpers
+namespace Dorsavi.Windows.Bluetooth.Common
 {
     public class PropertyHelper
     {

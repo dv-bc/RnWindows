@@ -105,18 +105,11 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Bluetooth\BleDevice.cs" />
     <Compile Include="Bluetooth\BleManager.cs" />
-    <Compile Include="Bluetooth\BleService.cs" />
-    <Compile Include="Bluetooth\Helpers\BleHelpers.cs" />
-    <Compile Include="Bluetooth\Helpers\PropertyHelper.cs" />
     <Compile Include="Constants\Enum.cs" />
-    <Compile Include="Constants\Codes.cs" />
-    <Compile Include="Helpers\Timers.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\ServiceResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AutolinkedNativeModules.g.cs" />
     <Compile Include="ReactPackageProvider.cs" />
@@ -158,7 +151,7 @@
       <Version>2.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.13</Version>
+      <Version>6.2.14</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
@@ -166,6 +159,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.lock.json" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Dorsavi.Windows.Bluetooth\Dorsavi.Windows.Bluetooth.csproj">
+      <Project>{bc88c459-b46c-4840-a510-5d100c221820}</Project>
+      <Name>Dorsavi.Windows.Bluetooth</Name>
+    </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ReactNativeWindowsTargets">
     <Import Project="$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CSharpApp.targets" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CSharpApp.targets')" />

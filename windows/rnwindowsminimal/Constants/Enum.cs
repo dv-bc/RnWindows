@@ -1,22 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace rnwindowsminimal.Constants
+﻿namespace rnwindowsminimal.Constants
 {
     public enum NotifyType
     {
         StatusMessage = 1,
         ErrorMessage = 0
     };
-
-    public class SensorHardwareTypeNames
-    {
-        public const string MDE = "MDE";
-
-        public const string MDD = "MDD";
-
-        public const string MDM = "MDM";
-    }
 }

@@ -1,73 +1,74 @@
-﻿using System;
-using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using Windows.Storage.Streams;
+﻿using Ardalis.SmartEnum;
 
-namespace rnwindowsminimal.Bluetooth.Helpers
+namespace Dorsavi.Windows.Bluetooth.Constants
 {
-
-
-    /// <summary>
-    /// Helpers for formatting information for display.
-    /// </summary>
-    public static class DisplayHelpers
+    public class CharacteristicPropertiesEnum : SmartEnum<CharacteristicPropertiesEnum>
     {
-        public static string GetServiceName(GattDeviceService service)
+        public uint CharacteristicValue { get; }
+
+        private CharacteristicPropertiesEnum(string name, uint value, int id) : base(name, id)
         {
-            if (IsSigDefinedUuid(service.Uuid))
-            {
-                GattNativeServiceUuid serviceName;
-                if (Enum.TryParse(Utilities.ConvertUuidToShortId(service.Uuid).ToString(), out serviceName))
-                {
-                    return serviceName.ToString();
-                }
-            }
-            return "Custom Service: " + service.Uuid;
+            this.CharacteristicValue = value;
         }
 
-        public static string GetCharacteristicName(GattCharacteristic characteristic)
-        {
-            if (IsSigDefinedUuid(characteristic.Uuid))
-            {
-                GattNativeCharacteristicUuid characteristicName;
-                if (Enum.TryParse(Utilities.ConvertUuidToShortId(characteristic.Uuid).ToString(),
-                    out characteristicName))
-                {
-                    return characteristicName.ToString();
-                }
-            }
-
-            if (!string.IsNullOrEmpty(characteristic.UserDescription))
-            {
-                return characteristic.UserDescription;
-            }
-            else
-            {
-                return "Custom Characteristic: " + characteristic.Uuid;
-            }
-        }
+        //
+        // Summary:
+        //     The characteristic doesn’t have any properties that apply.
+        public static readonly CharacteristicPropertiesEnum None = new CharacteristicPropertiesEnum("None", 0x0u, 1);
 
         /// <summary>
-        ///     The SIG has a standard base value for Assigned UUIDs. In order to determine if a UUID is SIG defined,
-        ///     zero out the unique section and compare the base sections.
+        /// The characteristic supports broadcasting
         /// </summary>
-        /// <param name="uuid">The UUID to determine if SIG assigned</param>
-        /// <returns></returns>
-        private static bool IsSigDefinedUuid(Guid uuid)
-        {
-            var bluetoothBaseUuid = new Guid("00000000-0000-1000-8000-00805F9B34FB");
+        public static readonly CharacteristicPropertiesEnum Broadcast = new CharacteristicPropertiesEnum("Broadcast", 0x1u, 2);
 
-            var bytes = uuid.ToByteArray();
-            // Zero out the first and second bytes
-            // Note how each byte gets flipped in a section - 1234 becomes 34 12
-            // Example Guid: 35918bc9-1234-40ea-9779-889d79b753f0
-            //                   ^^^^
-            // bytes output = C9 8B 91 35 34 12 EA 40 97 79 88 9D 79 B7 53 F0
-            //                ^^ ^^
-            bytes[0] = 0;
-            bytes[1] = 0;
-            var baseUuid = new Guid(bytes);
-            return baseUuid == bluetoothBaseUuid;
-        }
+        /// <summary>
+        /// The characteristic is readable
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum Read = new CharacteristicPropertiesEnum("Read", 0x2u, 3);
+
+        /// <summary>
+        /// The characteristic supports Write Without Response
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum WriteWithoutResponse = new CharacteristicPropertiesEnum("WriteWithoutResponse", 0x4u, 4);
+
+        /// <summary>
+        /// The characteristic is writable
+        /// </summary>
+
+        public static readonly CharacteristicPropertiesEnum Write = new CharacteristicPropertiesEnum("Write", 0x8u, 5);
+        /// <summary>
+        /// The characteristic is notifiable
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum Notify = new CharacteristicPropertiesEnum("Notify", 0x10u, 6);
+
+        /// <summary>
+        /// The characteristic is indicatable
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum Indicate = new CharacteristicPropertiesEnum("Indicate", 0x20u, 7);
+
+        /// <summary>
+        /// The characteristic supports signed writes
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum AuthenticatedSignedWrites = new CharacteristicPropertiesEnum("AuthenticatedSignedWrites", 0x40u, 8);
+
+        /// <summary>
+        /// The ExtendedProperties Descriptor is present
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum ExtendedProperties = new CharacteristicPropertiesEnum("ExtendedProperties", 0x80u, 9);
+
+        /// <summary>
+        /// The characteristic supports reliable writes
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum ReliableWrites = new CharacteristicPropertiesEnum("ReliableWrites", 0x100u, 10);
+
+        /// <summary>
+        /// The characteristic has writable auxiliaries
+        /// </summary>
+        public static readonly CharacteristicPropertiesEnum WritableAuxiliaries = new CharacteristicPropertiesEnum("WritableAuxiliaries", 0x200u, 11);
+
+
+
+
     }
 
     /// <summary>
@@ -225,38 +226,5 @@ namespace rnwindowsminimal.Bluetooth.Helpers
         ValidRange = 0x2906,
         ExternalReportReference = 0x2907,
         ReportReference = 0x2908
-    }
-
-    public static class Utilities
-    {
-        /// <summary>
-        ///     Converts from standard 128bit UUID to the assigned 32bit UUIDs. Makes it easy to compare services
-        ///     that devices expose to the standard list.
-        /// </summary>
-        /// <param name="uuid">UUID to convert to 32 bit</param>
-        /// <returns></returns>
-        public static ushort ConvertUuidToShortId(Guid uuid)
-        {
-            // Get the short Uuid
-            var bytes = uuid.ToByteArray();
-            var shortUuid = (ushort)(bytes[0] | (bytes[1] << 8));
-            return shortUuid;
-        }
-
-        /// <summary>
-        ///     Converts from a buffer to a properly sized byte array
-        /// </summary>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        public static byte[] ReadBufferToBytes(IBuffer buffer)
-        {
-            var dataLength = buffer.Length;
-            var data = new byte[dataLength];
-            using (var reader = DataReader.FromBuffer(buffer))
-            {
-                reader.ReadBytes(data);
-            }
-            return data;
-        }
     }
 }

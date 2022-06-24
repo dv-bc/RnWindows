@@ -16,7 +16,7 @@ import { NativeModules, NativeEventEmitter } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-const WinBluetoothEventEmitter = new NativeEventEmitter(NativeModules.BleManager);
+const WinBluetoothEventEmitter = new NativeEventEmitter(NativeModules.RnBluetooth);
 let KnownDevice = [
   // {
   //   id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
@@ -56,6 +56,12 @@ interface BleServiceCharactheristic {
   Name: string;
 }
 
+interface CharacteristicDescriptor {
+  UuId: string;
+  DeviceId: string;
+  ServiceId: string;
+  Value: string;
+}
 
 
 
@@ -67,7 +73,7 @@ export default function BleManager() {
   const [ConnectedDevice, setConnectedDevice] = useState([]);
   const [DeviceService, setDeviceService] = useState([]);
   const [DeviceCharacteristic, setDeviceCharacteristic] = useState([]);
-  const [CharacteristicDescriptor, setCharacteristicDescriptor] = useState<string[]>([]);
+  const [CharacteristicDescriptor, setCharacteristicDescriptor] = useState<CharacteristicDescriptor[]>([]);
 
   console.log("current knownDevice :" + KnownDevices);
 
@@ -109,7 +115,7 @@ export default function BleManager() {
 
   function PairDevice(Id: string) {
     const tempChar: BleServices[] = [];
-    NativeModules.BleManager.Connect(Id)
+    NativeModules.RnBluetooth.Connect(Id)
       .then((data: string) => {
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
@@ -185,11 +191,11 @@ export default function BleManager() {
     if (isScanningState != true) {
       console.log("know device cleared")
     }
-    NativeModules.BleManager.StartScan();
+    NativeModules.RnBluetooth.StartScan();
   }
 
   function GetServiceCharacteristic(deviceId: string, serviceId: string) {
-    NativeModules.BleManager.GetBleCharacteristic(deviceId, serviceId)
+    NativeModules.RnBluetooth.GetBleCharacteristic(deviceId, serviceId)
       .then((data: string) => {
         
         var resp = JSON.parse(data);
@@ -207,7 +213,7 @@ export default function BleManager() {
   }
 
   function GetCharacteristicDescriptor(deviceId: string, serviceId: string, characteristicId: string) {
-    NativeModules.BleManager.GetCharacteristicDescriptor(deviceId, serviceId, characteristicId)
+    NativeModules.RnBluetooth.GetCharacteristicDescriptor(deviceId, serviceId, characteristicId)
       .then((data: string) => {
         
         var resp = JSON.parse(data);
@@ -311,19 +317,45 @@ export default function BleManager() {
 const RenderCharacteristicDescriptor = ({
   data
 }:{
-  data:string[]
+  data:CharacteristicDescriptor[]
 }) => {
 
   const renderButtonList = () => {
-    return data.map((s:string,index:number)=>{
+    return data.map((s:CharacteristicDescriptor,index:number)=>{
 
-      switch(s){
+      switch(s.Value){
        case 'Read':
-         return (<Button key={index}title='Read'></Button>);
+         return (
+          <TouchableOpacity key={index} style={{
+            ...styles.item, 
+            backgroundColor:'#ffffff'}}>
+            <Text style={{
+              ...styles.title,
+              color: 'black',
+              fontSize:12
+            }}>Read</Text>
+          </TouchableOpacity>
+         );
          case 'Write':
-          return (<Button key={index}title='Write'></Button>);
-          case 'Subscribe':
-         return (<Button key={index}title='Subscribe'></Button>);  
+          return (<TouchableOpacity key={index} style={{
+            ...styles.item, 
+            backgroundColor:'#ffffff'}}>
+            <Text style={{
+              ...styles.title,
+              color: 'black',
+              fontSize:12
+            }}>Write</Text>
+          </TouchableOpacity>);
+          case 'Notify':
+         return (<TouchableOpacity key={index} style={{
+          ...styles.item, 
+          backgroundColor:'#ffffff'}}>
+          <Text style={{
+            ...styles.title,
+            color: 'black',
+            fontSize:12
+          }}>Subscribe</Text>
+        </TouchableOpacity>);  
        default:
         return <View key={index} />
       }
@@ -349,7 +381,7 @@ const RenderCharacteristicDescriptor = ({
         marginBottom: 10,
         fontSize: 24
       }}>BLE DEMO</Text>
-      <Text>{NativeModules.BleManager.Connected}</Text>
+      <Text>{NativeModules.RnBluetooth.Connected}</Text>
       <View style={{
         flexWrap: "wrap",
         flexDirection: "row",
