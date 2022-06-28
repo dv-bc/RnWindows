@@ -1,27 +1,40 @@
-﻿using Dorsavi.Windows.Framework.Model;
+﻿using Ardalis.SmartEnum;
+using Dorsavi.Windows.Framework.Model;
 using System;
 
 namespace Dorsavi.Windows.Framework.PubSub
 {
+    public class PublisherType : SmartEnum<PublisherType>
+    {
+        private PublisherType(string name, int value) : base(name, value)
+        {
+        }
+
+        public static readonly PublisherType PropertyChanged = new PublisherType("PropertyChanged", 1);
+        public static readonly PublisherType SubscriptionValue = new PublisherType("SubscriptionValue", 2);
+        public static readonly PublisherType ConnectedDevice = new PublisherType("ConnectedDevice", 3);
+    }
+
     public class Publisher
     {
-
-        //publishers name
         public string PublisherName { get; private set; }
 
-        //publishers notification interval
+        public PublisherType PublisherType { get; private set; }
+
         public int NotificationInterval { get; private set; }
 
-        // declare a delegate function
         public delegate void Notify(Publisher p, NotificationEvent e);
 
-        // declare an event variable of the delegate function
         public event Notify OnPublish;
 
-        // class constructor
-        public Publisher(string _publisherName, int _notificationInterval)
+        public Publisher(string _publisherName, PublisherType publisherType) : this(_publisherName, publisherType, 1000)
+        {
+        }
+
+        public Publisher(string _publisherName, PublisherType publisherType, int _notificationInterval)
         {
             PublisherName = _publisherName;
+            PublisherType = publisherType;
             NotificationInterval = _notificationInterval;
         }
 
@@ -33,11 +46,10 @@ namespace Dorsavi.Windows.Framework.PubSub
 
             if (OnPublish != null)
             {
-                NotificationEvent notificationObj = new NotificationEvent(DateTime.Now, message);
+                NotificationEvent notificationObj = new NotificationEvent(DateTime.Now, message, PublisherType);
                 OnPublish(this, notificationObj);
             }
             //Thread.Yield();
-
         }
     }
 }

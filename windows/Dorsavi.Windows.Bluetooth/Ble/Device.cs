@@ -2,10 +2,12 @@
 using Dorsavi.Windows.Bluetooth.Models;
 using Dorsavi.Windows.Bluetooth.Sensor.Models;
 using Dorsavi.Windows.Bluetooth.Sensor.V6c;
+using Dorsavi.Windows.Framework.Infrastructure;
+using Dorsavi.Windows.Framework.PubSub;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
@@ -13,13 +15,18 @@ using Windows.Devices.Enumeration;
 
 namespace Dorsavi.Windows.Bluetooth.Ble
 {
-    public class BleDevice : INotifyPropertyChanged, IDisposable
+    public class BleDevice : IDisposable
     {
+        private readonly List<Publisher> _publishers;
+        private readonly Subscriber _subscriber;
+
         public BleDevice()
         {
+            _publishers = Singleton<List<Publisher>>.Instance;
+            _subscriber = Singleton<Subscriber>.Instance;
         }
 
-        public BleDevice(DeviceInformation deviceInfoIn)
+        public BleDevice(DeviceInformation deviceInfoIn) : this()
         {
             DeviceInformation = deviceInfoIn;
         }
@@ -85,26 +92,24 @@ namespace Dorsavi.Windows.Bluetooth.Ble
 
         public IReadOnlyDictionary<string, object> Properties => DeviceInformation?.Properties;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public void Update(DeviceInformationUpdate deviceInfoUpdate)
         {
             DeviceInformation.Update(deviceInfoUpdate);
 
-            OnPropertyChanged("Id");
-            OnPropertyChanged("Name");
-            OnPropertyChanged("DeviceInformation");
-            OnPropertyChanged("IsPaired");
-            OnPropertyChanged("IsConnected");
-            OnPropertyChanged("Properties");
-            OnPropertyChanged("IsConnectable");
-            OnPropertyChanged("Rssi");
+            //OnPropertyChanged("Id");
+            //OnPropertyChanged("Name");
+            //OnPropertyChanged("DeviceInformation");
+            //OnPropertyChanged("IsPaired");
+            //OnPropertyChanged("IsConnected");
+            //OnPropertyChanged("Properties");
+            //OnPropertyChanged("IsConnectable");
+            //OnPropertyChanged("Rssi");
         }
 
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+        //protected void OnPropertyChanged(string name)
+        //{
+        //    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        //}
 
         public async Task<ServiceResponse> ConnectAsync(string deviceId)
         {
@@ -146,9 +151,6 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                         Services = new List<BleDeviceServices>();
                     }
 
-
-
-
                     foreach (var service in result.Services)
                     {
                         if ((Name.StartsWith(SensorHardwareTypeNames.MDE) || Name.StartsWith(SensorHardwareTypeNames.MDD) ||
@@ -163,7 +165,7 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                     }
                     response.Valid = true;
                     //UserNotification(String.Format($"Connected to device {device.Name}, found {device.Services.Count} services"), (int)NotifyType.StatusMessage);
-                    this.BluetoothLEDevice.ConnectionStatusChanged += this.DeviceConnectionStatusChanged;
+                    AddConnectionStatusChangedHandler();
                 }
                 else
                 {
@@ -194,14 +196,9 @@ namespace Dorsavi.Windows.Bluetooth.Ble
 
         private void DeviceConnectionStatusChanged(BluetoothLEDevice sender, object args)
         {
-            if (this.Name.ToUpper() == sender.DeviceInformation.Name.ToUpper())
-            {
-                if (sender.ConnectionStatus != BluetoothConnectionStatus.Connected)
-                {
-                    this.DisconnectAsync();
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsConnected"));
-                }
-            }
+            var publisher = _publishers.FirstOrDefault(x => x.PublisherName == Name && x.PublisherType == PublisherType.PropertyChanged);
+            if (publisher != null)
+                publisher.Publish(Name);
         }
 
         private void ClearAllSensorCache()
@@ -223,7 +220,19 @@ namespace Dorsavi.Windows.Bluetooth.Ble
 
         private void RemoveValueChangedHandler()
         {
+            var publisher = _publishers.FirstOrDefault(x => x.PublisherName == Name && x.PublisherType == PublisherType.PropertyChanged);
+            _subscriber.Unsubscribe(publisher);
+            _publishers.Remove(publisher);
             this.BluetoothLEDevice.ConnectionStatusChanged -= this.DeviceConnectionStatusChanged;
+        }
+
+        private Publisher AddConnectionStatusChangedHandler()
+        {
+            var publisher = new Publisher(Name, PublisherType.PropertyChanged);
+            _subscriber.Subscribe(publisher);
+            _publishers.Add(publisher);
+            this.BluetoothLEDevice.ConnectionStatusChanged += this.DeviceConnectionStatusChanged;
+            return publisher;
         }
 
         #endregion Private

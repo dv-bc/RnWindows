@@ -12,7 +12,6 @@ namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
         public override string Name => V6CServiceUuId.FromUuidValue(UUid)?.Name ?? base.Name;
     }
 
-
     public class V6cDeviceCharacteristic : BleDeviceCharacteristic
     {
         public V6cDeviceCharacteristic(GattCharacteristic gattCharacteristic, string deviceId, string serviceId) : base(gattCharacteristic, deviceId, serviceId)

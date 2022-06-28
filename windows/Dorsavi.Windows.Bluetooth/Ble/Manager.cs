@@ -1,29 +1,29 @@
 ﻿using Dorsavi.Windows.Bluetooth.Constants;
 using Dorsavi.Windows.Bluetooth.Models;
+using Dorsavi.Windows.Framework.Infrastructure;
+using Dorsavi.Windows.Framework.Model;
+using Dorsavi.Windows.Framework.PubSub;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using Windows.Security.Cryptography;
-using Windows.Storage.Streams;
 
 namespace Dorsavi.Windows.Bluetooth.Ble
 {
-    public class BleManager : INotifyPropertyChanged, IDisposable
+    public class BleManager : IDisposable
     {
+        private readonly List<Publisher> _publishers;
+        private readonly Subscriber _subscriber;
+
         #region Fields
 
         private bool isConnecting;
 
         #endregion Fields
 
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        //public event PropertyChangedEventHandler PropertyChanged;
 
         #region Props
 
@@ -41,8 +41,31 @@ namespace Dorsavi.Windows.Bluetooth.Ble
 
         public BleManager()
         {
+            _publishers = Singleton<List<Publisher>>.Instance;
+            _subscriber = Singleton<Subscriber>.Instance;
+
+            var publisher = new Publisher(this.GetType().Name, PublisherType.ConnectedDevice);
+            _subscriber.Subscribe(publisher);
+            _publishers.Add(publisher);
+
             ConnectedDevices = new ObservableCollection<BleDevice>();
             ConnectedDevices.CollectionChanged += ConnectedDevicesChanged;
+
+            _subscriber.NotificationReceived += NotificationReceived;
+        }
+
+        private void NotificationReceived(object sender, EventArgs e)
+        {
+            if (e.GetType() == typeof(NotificationEvent))
+            {
+                var notificationEvent = (NotificationEvent)e;
+                if (notificationEvent.PublisherType == PublisherType.PropertyChanged)
+                {
+                    var device = ConnectedDevices.FirstOrDefault(x => x.Name == notificationEvent.NotificationMessage);
+                    if (device != null || device.IsConnected.HasValue && !device.IsConnected.Value)
+                        ConnectedDevices.Remove(device);
+                }
+            }
         }
 
         #endregion Props
@@ -53,12 +76,12 @@ namespace Dorsavi.Windows.Bluetooth.Ble
         {
             var response = new ServiceResponse<BleDevice>();
             IsConnecting = true;
-            if (!await ClearBluetoothLEDeviceAsync())
-            {
-                response.Message.Add("Error: Unable to reset state, try again.");
-                response.Valid = false;
-                return response;
-            }
+            //if (!await ClearBluetoothLEDeviceAsync())
+            //{
+            //    response.Message.Add("Error: Unable to reset state, try again.");
+            //    response.Valid = false;
+            //    return response;
+            //}
             var device = ConnectedDevices.FirstOrDefault(x => x.Id == deviceId);
             if (device == null)
             {
@@ -146,7 +169,6 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                 if (selectedCharacteristic != null)
                 {
                     return await selectedCharacteristic.GetCharacteristicDescriptorsAsync();
-
                 }
                 resp.Valid = false;
                 resp.Message.Add("Cannot find characteristic");
@@ -204,30 +226,26 @@ namespace Dorsavi.Windows.Bluetooth.Ble
 
         #region Private
 
-
-
-
-
-        private async Task<bool> ClearBluetoothLEDeviceAsync()
-        {
-            //if (subscribedForNotifications)
-            //{
-            //    // Need to clear the CCCD from the remote device so we stop receiving notifications
-            //    var result = await registeredCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.None);
-            //    if (result != GattCommunicationStatus.Success)
-            //    {
-            //        return false;
-            //    }
-            //    else
-            //    {
-            //        selectedCharacteristic.ValueChanged -= Characteristic_ValueChanged;
-            //        subscribedForNotifications = false;
-            //    }
-            //}
-            //bluetoothLeDevice?.Dispose();
-            //bluetoothLeDevice = null;
-            return true;
-        }
+        //private async Task<bool> ClearBluetoothLEDeviceAsync()
+        //{
+        //    //if (subscribedForNotifications)
+        //    //{
+        //    //    // Need to clear the CCCD from the remote device so we stop receiving notifications
+        //    //    var result = await registeredCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(GattClientCharacteristicConfigurationDescriptorValue.None);
+        //    //    if (result != GattCommunicationStatus.Success)
+        //    //    {
+        //    //        return false;
+        //    //    }
+        //    //    else
+        //    //    {
+        //    //        selectedCharacteristic.ValueChanged -= Characteristic_ValueChanged;
+        //    //        subscribedForNotifications = false;
+        //    //    }
+        //    //}
+        //    //bluetoothLeDevice?.Dispose();
+        //    //bluetoothLeDevice = null;
+        //    return true;
+        //}
 
         private ServiceResponse<BleDevice> ValidateConnectedDevice(string deviceId)
         {
@@ -268,115 +286,13 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             return resp;
         }
 
-        private string FormatValueByPresentation(IBuffer buffer, GattPresentationFormat format)
-        {
-            // BT_Code: For the purpose of this sample, this function converts only UInt32 and
-            // UTF-8 buffers to readable text. It can be extended to support other formats if your app needs them.
-            byte[] data;
-            CryptographicBuffer.CopyToByteArray(buffer, out data);
-
-            if (format != null)
-            {
-                if (format.FormatType == GattPresentationFormatTypes.UInt32 && data.Length >= 4)
-                {
-                    return BitConverter.ToInt32(data, 0).ToString();
-                }
-                else if (format.FormatType == GattPresentationFormatTypes.Utf8)
-                {
-                    try
-                    {
-                        return Encoding.UTF8.GetString(data);
-                    }
-                    catch (ArgumentException)
-                    {
-                        return "(error: Invalid UTF-8 string)";
-                    }
-                }
-                else
-                {
-                    // Add support for other format types as needed.
-                    return "Unsupported format: " + CryptographicBuffer.EncodeToHexString(buffer);
-                }
-            }
-            //else if (data != null)
-            //{
-            //    // We don't know what format to use. Let's try some well-known profiles, or default back to UTF-8.
-            //    if (selectedCharacteristic.Uuid.Equals(GattCharacteristicUuids.HeartRateMeasurement))
-            //    {
-            //        try
-            //        {
-            //            return "Heart Rate: " + ParseHeartRateValue(data).ToString();
-            //        }
-            //        catch (ArgumentException)
-            //        {
-            //            return "Heart Rate: (unable to parse)";
-            //        }
-            //    }
-            //    else if (selectedCharacteristic.Uuid.Equals(GattCharacteristicUuids.BatteryLevel))
-            //    {
-            //        try
-            //        {
-            //            // battery level is encoded as a percentage value in the first byte according to
-            //            // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.battery_level.xml
-            //            return "Battery Level: " + data[0].ToString() + "%";
-            //        }
-            //        catch (ArgumentException)
-            //        {
-            //            return "Battery Level: (unable to parse)";
-            //        }
-            //    }
-            //    // This is our custom calc service Result UUID. Format it like an Int
-            //    else if (selectedCharacteristic.Uuid.Equals(Constants.ResultCharacteristicUuid))
-            //    {
-            //        return BitConverter.ToInt32(data, 0).ToString();
-            //    }
-            //    // No guarantees on if a characteristic is registered for notifications.
-            //    else if (registeredCharacteristic != null)
-            //    {
-            //        // This is our custom calc service Result UUID. Format it like an Int
-            //        if (registeredCharacteristic.Uuid.Equals(Constants.ResultCharacteristicUuid))
-            //        {
-            //            return BitConverter.ToInt32(data, 0).ToString();
-            //        }
-            //    }
-            //    else
-            //    {
-            //        return CryptographicBuffer.EncodeToHexString(buffer);
-
-            //        try
-            //        {
-            //            return "Unknown format: " + Encoding.UTF8.GetString(data);
-            //        }
-            //        catch (ArgumentException)
-            //        {
-            //            return "Unknown format";
-            //        }
-            //    }
-            //}
-            else
-            {
-                return "Empty data received";
-            }
-            return "Unknown format";
-        }
-
         private void ConnectedDevicesChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             bool connectedChanges = false;
-            if (e.NewItems != null)
+            var publisher = _publishers.FirstOrDefault(x => x.PublisherType == PublisherType.ConnectedDevice);
+
+            if (e.NewItems != null || e.OldItems != null)
             {
-                foreach (BleDevice item in e.NewItems)
-                {
-                    item.PropertyChanged += ConnectedDevicelPropertyChanged;
-                }
-                connectedChanges = true;
-            }
-            if (e.OldItems != null)
-            {
-                foreach (var y in e.OldItems)
-                {
-                    // device removed
-                }
                 connectedChanges = true;
             }
             if (e.Action == NotifyCollectionChangedAction.Move)
@@ -385,27 +301,15 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             }
 
             if (connectedChanges)
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ConnectedDevices"));
-        }
-
-        public void ConnectedDevicelPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            // device disconnected
-            if (sender.GetType() == typeof(BleDevice))
-            {
-                BleDevice device = (BleDevice)sender;
-                if (e.PropertyName == "IsConnected" && device.IsConnected.HasValue && !device.IsConnected.Value)
-                    ConnectedDevices.Remove(device);
-                else
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ConnectedDevices"));
-            }
-
-            //This will get called when the property of an object inside the collection changes
+                publisher.Publish("Connected device changes");
         }
 
         public void Dispose()
         {
-            ConnectedDevices.CollectionChanged -= ConnectedDevicesChanged;
+            var publisher = _publishers.FirstOrDefault(x => x.PublisherType == PublisherType.ConnectedDevice);
+            _subscriber.Unsubscribe(publisher);
+            _publishers.Remove(publisher);
+
             foreach (var item in ConnectedDevices)
             {
                 item.Dispose();
@@ -413,5 +317,20 @@ namespace Dorsavi.Windows.Bluetooth.Ble
         }
 
         #endregion Private
+
+        //public void ConnectedDevicelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        //{
+        //    // device disconnected
+        //    if (sender.GetType() == typeof(BleDevice))
+        //    {
+        //        BleDevice device = (BleDevice)sender;
+        //        if (e.PropertyName == "IsConnected" && device.IsConnected.HasValue && !device.IsConnected.Value)
+        //            ConnectedDevices.Remove(device);
+        //        else
+        //            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ConnectedDevices"));
+        //    }
+
+        //    //This will get called when the property of an object inside the collection changes
+        //}
     }
 }

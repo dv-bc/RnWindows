@@ -13,7 +13,7 @@ namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
             this.UUid = value;
         }
 
-        public static new V6CServiceUuId FromUuidValue(string uuid)
+        public new static V6CServiceUuId FromUuidValue(string uuid)
         {
             if (string.IsNullOrEmpty(uuid))
             {

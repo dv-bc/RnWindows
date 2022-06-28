@@ -4,9 +4,6 @@ using System.Linq;
 
 namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
 {
-
-
-
     public class V6CCharacteristic : SmartEnum<V6CCharacteristic>
     {
         public string UUid { get; }
@@ -16,7 +13,7 @@ namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
             this.UUid = value;
         }
 
-        public static new V6CCharacteristic FromUuidValue(string uuid)
+        public new static V6CCharacteristic FromUuidValue(string uuid)
         {
             if (string.IsNullOrEmpty(uuid))
             {

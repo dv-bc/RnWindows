@@ -10,7 +10,6 @@ using rnwindowsminimal.Constants;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
@@ -23,7 +22,6 @@ using Windows.Storage.Streams;
 
 namespace rnwindowsminimal.Bluetooth
 {
-
     /// <summary>
     /// React module that consumes bluetooth manager class
     /// </summary>
@@ -40,8 +38,7 @@ namespace rnwindowsminimal.Bluetooth
             _subscriber.NotificationReceived += NotificationReceived;
 
             _bleManager = new BleManager();
-            _bleManager.PropertyChanged += PropertyChanged;
-
+            //_bleManager.PropertyChanged += PropertyChanged;
         }
 
         #region React Events
@@ -620,45 +617,53 @@ namespace rnwindowsminimal.Bluetooth
             return JsonConvert.SerializeObject(response);
         }
 
-
-        private void RemoveValueChangedHandler()
-        {
-            if (subscribedForNotifications)
-            {
-                registeredCharacteristic.ValueChanged -= Characteristic_ValueChanged;
-                registeredCharacteristic = null;
-                subscribedForNotifications = false;
-            }
-        }
+        //private void RemoveValueChangedHandler()
+        //{
+        //    if (subscribedForNotifications)
+        //    {
+        //        registeredCharacteristic.ValueChanged -= Characteristic_ValueChanged;
+        //        registeredCharacteristic = null;
+        //        subscribedForNotifications = false;
+        //    }
+        //}
 
         #endregion Methods
 
         #region Private
 
-        private void PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            // device disconnected
-            if (sender.GetType() == typeof(BleManager))
-            {
-                BleManager device = (BleManager)sender;
-                //if (e.PropertyName == "ConnectedDevices")
-                //{
-                ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
-                //}
-            }
+        //private void PropertyChanged(object sender, PropertyChangedEventArgs e)
+        //{
+        //    // device disconnected
+        //    if (sender.GetType() == typeof(BleManager))
+        //    {
+        //        BleManager device = (BleManager)sender;
+        //        //if (e.PropertyName == "ConnectedDevices")
+        //        //{
+        //        ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
+        //        //}
+        //    }
 
-            //This will get called when the property of an object inside the collection changes
-        }
-
+        //    //This will get called when the property of an object inside the collection changes
+        //}
 
         private void NotificationReceived(object sender, EventArgs e)
         {
             if (e.GetType() == typeof(NotificationEvent))
-                SubscriptionEvent(JsonConvert.SerializeObject(e));
+            {
+                var notificationEvent = (NotificationEvent)e;
+                if (notificationEvent.PublisherType == PublisherType.PropertyChanged)
+                {
+                    ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
+                }
+                else if (notificationEvent.PublisherType == PublisherType.SubscriptionValue)
+                    SubscriptionEvent(JsonConvert.SerializeObject(e));
+                else if (notificationEvent.PublisherType == PublisherType.ConnectedDevice)
+                    ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
+            }
             else
                 UserNotification("we got notification", (int)(int)NotifyType.StatusMessage);
         }
 
-        #endregion
+        #endregion Private
     }
 }

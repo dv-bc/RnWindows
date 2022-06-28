@@ -161,7 +161,10 @@
         }
       },
       "dorsavi.windows.framework": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "Ardalis.SmartEnum": "2.1.0"
+        }
       },
       "fmt": {
         "type": "Project"

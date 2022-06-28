@@ -57,7 +57,6 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                                 else
                                     BleCharacteristics.Add(new BleDeviceCharacteristic(item, DeviceId, UUid));
                             }
-
                         }
                     }
                     resp.Valid = true;
@@ -72,9 +71,6 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             }
             return resp;
         }
-
-
-
 
         public void Dispose()
         {

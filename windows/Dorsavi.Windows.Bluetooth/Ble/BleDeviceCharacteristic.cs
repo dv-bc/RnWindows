@@ -255,7 +255,6 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             return resp;
         }
 
-
         #region Private
 
         private async void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
@@ -267,27 +266,24 @@ namespace Dorsavi.Windows.Bluetooth.Ble
 
                 byte[] data;
                 CryptographicBuffer.CopyToByteArray(args.CharacteristicValue, out data);
-                var message = $"Value at {DateTime.Now:hh:mm:ss.FFF}: {Convert.ToBase64String(data)}";
 
                 var publisher = _publishers.FirstOrDefault(x => x.PublisherName == PublisherName);
                 if (publisher != null)
                 {
-                    publisher.Publish(message);
+                    publisher.Publish(Convert.ToBase64String(data));
                 }
             }
             catch (Exception ex)
             {
-
                 throw;
             }
-
         }
 
         private void AddValueChangedHandler()
         {
             if (!subscribedForNotification)
             {
-                var publisher = new Publisher($"{DeviceId}|{ServiceId}|{Uuid}|{Name}", 100);
+                var publisher = new Publisher($"{PublisherName}", PublisherType.SubscriptionValue);
                 _subscriber.Subscribe(publisher);
                 _publishers.Add(publisher);
                 Characteristic.ValueChanged += Characteristic_ValueChanged;
@@ -306,7 +302,6 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                 subscribedForNotification = false;
             }
         }
-
 
         public async Task<ServiceResponse<string>> CharacteristicRead()
         {
@@ -332,7 +327,6 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             }
             return resp;
         }
-
 
         #endregion Private
     }
