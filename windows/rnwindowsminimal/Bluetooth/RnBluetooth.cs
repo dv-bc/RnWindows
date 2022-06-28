@@ -1,12 +1,16 @@
 ﻿using Dorsavi.Windows.Bluetooth.Ble;
 using Dorsavi.Windows.Bluetooth.Constants;
 using Dorsavi.Windows.Bluetooth.Models;
+using Dorsavi.Windows.Framework.Infrastructure;
+using Dorsavi.Windows.Framework.Model;
+using Dorsavi.Windows.Framework.PubSub;
 using Microsoft.ReactNative.Managed;
 using Newtonsoft.Json;
 using rnwindowsminimal.Constants;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
@@ -19,6 +23,7 @@ using Windows.Storage.Streams;
 
 namespace rnwindowsminimal.Bluetooth
 {
+
     /// <summary>
     /// React module that consumes bluetooth manager class
     /// </summary>
@@ -27,9 +32,16 @@ namespace rnwindowsminimal.Bluetooth
     {
         private readonly BleManager _bleManager;
 
+        private readonly Subscriber _subscriber;
+
         public RnBluetooth()
         {
+            _subscriber = Singleton<Subscriber>.Instance;
+            _subscriber.NotificationReceived += NotificationReceived;
+
             _bleManager = new BleManager();
+            _bleManager.PropertyChanged += PropertyChanged;
+
         }
 
         #region React Events
@@ -57,6 +69,9 @@ namespace rnwindowsminimal.Bluetooth
 
         [ReactEvent]
         public Action<string> DeviceDisconnect { get; set; }
+
+        [ReactEvent]
+        public Action<string> SubscriptionEvent { get; set; }
 
         [ReactEvent]
         public Action<string> DeviceEnumerationCompleted { get; set; }
@@ -160,8 +175,8 @@ namespace rnwindowsminimal.Bluetooth
         public async Task<string> ConnectToDevice(string deviceId)
         {
             var resp = await _bleManager.ConnectToDeviceAsync(deviceId);
-            if (resp.Valid)
-                ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
+            //if (resp.Valid)
+            //ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
 
             return JsonConvert.SerializeObject(resp);
         }
@@ -432,8 +447,6 @@ namespace rnwindowsminimal.Bluetooth
         private GattCharacteristic registeredCharacteristic;
         private GattPresentationFormat presentationFormat;
 
-
-
         private async void Characteristic_ValueChanged(GattCharacteristic sender, GattValueChangedEventArgs args)
         {
             // BT_Code: An Indicate or Notify reported that the value has changed.
@@ -578,8 +591,23 @@ namespace rnwindowsminimal.Bluetooth
             return JsonConvert.SerializeObject(response);
         }
 
+        //[ReactMethod("SendCommand")]
+        //public async Task<string> ReadCharacteristic(string deviceId, string serviceId, string characteristicUuid, string descriptor)
+        //{
+        //    CharacteristicPropertiesEnum characteristicProperties;
+        //    if (!CharacteristicPropertiesEnum.TryFromName(descriptor, out characteristicProperties))
+        //    {
+        //        var invalid = new ServiceResponse().ToInvalidRequest("Invalid descriptor for selected characteristic.");
+        //        return JsonConvert.SerializeObject(invalid);
+        //    }
+
+        //    var response = await _bleManager.SendCommand(deviceId, serviceId, characteristicUuid, characteristicProperties);
+        //    return JsonConvert.SerializeObject(response);
+        //}
+
         [ReactMethod("SendCommand")]
-        public async Task<string> SendCommand(string deviceId, string serviceId, string characteristicUuid, string descriptor)
+        public async Task<string> WriteCharacteristic(string deviceId, string serviceId, string characteristicUuid, string descriptor,
+            string writeValue, bool sendAsInt)
         {
             CharacteristicPropertiesEnum characteristicProperties;
             if (!CharacteristicPropertiesEnum.TryFromName(descriptor, out characteristicProperties))
@@ -588,84 +616,10 @@ namespace rnwindowsminimal.Bluetooth
                 return JsonConvert.SerializeObject(invalid);
             }
 
-            var response = await _bleManager.SendCommand(deviceId, serviceId, characteristicUuid, characteristicProperties);
+            var response = await _bleManager.SendCommand(deviceId, serviceId, characteristicUuid, characteristicProperties, writeValue, sendAsInt);
             return JsonConvert.SerializeObject(response);
-
-
         }
 
-        [ReactMethod("SubscribeChanges")]
-        public async void ValueChangedSubscribeToggle_Click()
-        {
-            if (!subscribedForNotifications)
-            {
-                // initialize status
-                GattCommunicationStatus status = GattCommunicationStatus.Unreachable;
-                var cccdValue = GattClientCharacteristicConfigurationDescriptorValue.None;
-                if (selectedCharacteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Indicate))
-                {
-                    cccdValue = GattClientCharacteristicConfigurationDescriptorValue.Indicate;
-                }
-                else if (selectedCharacteristic.CharacteristicProperties.HasFlag(GattCharacteristicProperties.Notify))
-                {
-                    cccdValue = GattClientCharacteristicConfigurationDescriptorValue.Notify;
-                }
-
-                try
-                {
-                    // BT_Code: Must write the CCCD in order for server to send indications.
-                    // We receive them in the ValueChanged event handler.
-                    status = await selectedCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(cccdValue);
-
-                    if (status == GattCommunicationStatus.Success)
-                    {
-                        if (!subscribedForNotifications)
-                        {
-                            registeredCharacteristic = selectedCharacteristic;
-                            registeredCharacteristic.ValueChanged += Characteristic_ValueChanged;
-                            subscribedForNotifications = true;
-                        }
-                        UserNotification("Successfully subscribed for value changes", (int)NotifyType.StatusMessage);
-                    }
-                    else
-                    {
-                        UserNotification($"Error registering for value changes: {status}", (int)NotifyType.ErrorMessage);
-                    }
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    // This usually happens when a device reports that it support indicate, but it actually doesn't.
-                    UserNotification(ex.Message, (int)NotifyType.ErrorMessage);
-                }
-            }
-            else
-            {
-                try
-                {
-                    // BT_Code: Must write the CCCD in order for server to send notifications.
-                    // We receive them in the ValueChanged event handler.
-                    // Note that this sample configures either Indicate or Notify, but not both.
-                    var result = await
-                            selectedCharacteristic.WriteClientCharacteristicConfigurationDescriptorAsync(
-                                GattClientCharacteristicConfigurationDescriptorValue.None);
-                    if (result == GattCommunicationStatus.Success)
-                    {
-                        subscribedForNotifications = false;
-                        RemoveValueChangedHandler();
-                        UserNotification("Successfully un-registered for notifications", (int)NotifyType.StatusMessage);
-                    }
-                    else
-                    {
-                        UserNotification($"Error un-registering for notifications: {result}", (int)NotifyType.ErrorMessage);
-                    }
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    // This usually happens when a device reports that it support notify, but it actually doesn't.
-                    UserNotification(ex.Message, (int)NotifyType.ErrorMessage);
-                }
-            }
-        }
 
         private void RemoveValueChangedHandler()
         {
@@ -678,5 +632,33 @@ namespace rnwindowsminimal.Bluetooth
         }
 
         #endregion Methods
+
+        #region Private
+
+        private void PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // device disconnected
+            if (sender.GetType() == typeof(BleManager))
+            {
+                BleManager device = (BleManager)sender;
+                //if (e.PropertyName == "ConnectedDevices")
+                //{
+                ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
+                //}
+            }
+
+            //This will get called when the property of an object inside the collection changes
+        }
+
+
+        private void NotificationReceived(object sender, EventArgs e)
+        {
+            if (e.GetType() == typeof(NotificationEvent))
+                SubscriptionEvent(JsonConvert.SerializeObject(e));
+            else
+                UserNotification("we got notification", (int)(int)NotifyType.StatusMessage);
+        }
+
+        #endregion
     }
 }

@@ -1,7 +1,12 @@
 ﻿using Ardalis.SmartEnum;
+using System;
+using System.Linq;
 
 namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
 {
+
+
+
     public class V6CCharacteristic : SmartEnum<V6CCharacteristic>
     {
         public string UUid { get; }
@@ -9,6 +14,15 @@ namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
         private V6CCharacteristic(string name, string value, int id) : base(name, id)
         {
             this.UUid = value;
+        }
+
+        public static new V6CCharacteristic FromUuidValue(string uuid)
+        {
+            if (string.IsNullOrEmpty(uuid))
+            {
+                throw new ArgumentNullException(nameof(uuid));
+            }
+            return List.FirstOrDefault(x => x.UUid == uuid);
         }
 
         public static readonly V6CCharacteristic Primary = new V6CCharacteristic("Primary", "0x180D", 1);

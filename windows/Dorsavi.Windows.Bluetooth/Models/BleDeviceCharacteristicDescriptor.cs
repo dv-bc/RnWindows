@@ -6,6 +6,7 @@
         public string ServiceId { get; set; }
         public string CharacteristicUuid { get; set; }
         public string Value { get; set; }
+        public bool SubscriptionState { get; set; }
     }
 
     public class ServiceName

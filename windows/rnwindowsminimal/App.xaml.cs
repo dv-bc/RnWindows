@@ -1,4 +1,7 @@
+using Dorsavi.Windows.Framework.Infrastructure;
+using Dorsavi.Windows.Framework.PubSub;
 using Microsoft.ReactNative;
+using System.Collections.Generic;
 #if USE_WINUI3
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,8 +15,11 @@ namespace rnwindowsminimal
 {
     sealed partial class App : ReactApplication
     {
+
         public App()
         {
+            Singleton<List<Publisher>>.Instance = new List<Publisher>();
+            Singleton<Subscriber>.Instance = new Subscriber("RnApplication");
 #if BUNDLE
             JavaScriptBundleFile = "index.windows";
             InstanceSettings.UseWebDebugger = false;

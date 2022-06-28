@@ -155,9 +155,13 @@
         "type": "Project",
         "dependencies": {
           "Ardalis.SmartEnum": "2.1.0",
+          "Dorsavi.Windows.Framework": "1.0.0",
           "Microsoft.NETCore.UniversalWindowsPlatform": "6.2.13",
           "Newtonsoft.Json": "13.0.1"
         }
+      },
+      "dorsavi.windows.framework": {
+        "type": "Project"
       },
       "fmt": {
         "type": "Project"

@@ -8,7 +8,8 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  StatusBar
+  TextInput,
+  Switch
 } from 'react-native';
 
 import { NativeModules, NativeEventEmitter } from 'react-native';
@@ -57,11 +58,14 @@ interface BleServiceCharactheristic {
 }
 
 interface CharacteristicDescriptor {
-  UuId: string;
+  CharacteristicUuid: string;
   DeviceId: string;
   ServiceId: string;
   Value: string;
+  SubscriptionState: Boolean;
 }
+
+
 
 
 
@@ -74,6 +78,13 @@ export default function BleManager() {
   const [DeviceService, setDeviceService] = useState([]);
   const [DeviceCharacteristic, setDeviceCharacteristic] = useState([]);
   const [CharacteristicDescriptor, setCharacteristicDescriptor] = useState<CharacteristicDescriptor[]>([]);
+  const [writeValue, setwriteValue] = useState(String);
+  const [sendAsInt, setsendAsInt] = useState(Boolean);
+  const [ReadOutput, setReadOutput] = useState(String);
+
+
+
+
 
   console.log("current knownDevice :" + KnownDevices);
 
@@ -88,7 +99,7 @@ export default function BleManager() {
     WinBluetoothEventEmitter.addListener('DeviceEnumerationCompleted', DeviceWatcherEnumerationCompleted);
     WinBluetoothEventEmitter.addListener('IsScanningEvent', SetScanning);
     WinBluetoothEventEmitter.addListener('IsConnecting', SetConnecting);
-
+    WinBluetoothEventEmitter.addListener('SubscriptionEvent', SubscriptionEvent);
     return () => {
 
       // componentwillunmount in functional component.
@@ -100,6 +111,7 @@ export default function BleManager() {
       WinBluetoothEventEmitter.addListener('IsScanningEvent', SetScanning).remove();
       WinBluetoothEventEmitter.addListener('IsConnecting', SetConnecting).remove();
       WinBluetoothEventEmitter.addListener('DeviceEnumerationCompleted', DeviceWatcherEnumerationCompleted).remove();
+      WinBluetoothEventEmitter.addListener('SubscriptionEvent', SubscriptionEvent).remove();
     }
   }, []);
 
@@ -185,6 +197,10 @@ export default function BleManager() {
   function UserNotification(message: string) {
     console.log("Notification to user: " + message);
   }
+  function SubscriptionEvent(message: string) {
+    console.log(message);
+  }
+
   //#endregion
 
   function ScanClicked() {
@@ -197,7 +213,7 @@ export default function BleManager() {
   function GetServiceCharacteristic(deviceId: string, serviceId: string) {
     NativeModules.RnBluetooth.GetBleCharacteristic(deviceId, serviceId)
       .then((data: string) => {
-        
+
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
           setDeviceCharacteristic(resp.Content)
@@ -215,7 +231,7 @@ export default function BleManager() {
   function GetCharacteristicDescriptor(deviceId: string, serviceId: string, characteristicId: string) {
     NativeModules.RnBluetooth.GetCharacteristicDescriptor(deviceId, serviceId, characteristicId)
       .then((data: string) => {
-        
+
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
           setCharacteristicDescriptor(resp.Content)
@@ -230,17 +246,69 @@ export default function BleManager() {
 
   }
 
-  
+  function ReadCharacteristic(deviceId: string, serviceId: string, characteristicId: string, descriptor: string) {
+    NativeModules.RnBluetooth.SendCommand(deviceId, serviceId, characteristicId, descriptor)
+      .then((data: string) => {
+
+        var resp = JSON.parse(data);
+        if (resp.Valid && resp.Content != null) {
+          setReadOutput(resp.Content);
+        }
+        else if (resp.Valid) {
+          alert(resp.Message.join());
+        }
+        else {
+          alert("Fail to get read Characteristc ");
+        }
+      });
+  }
+
+  function WriteCharacteristic(deviceId: string, serviceId: string, characteristicId: string, descriptor: string) {
+    NativeModules.RnBluetooth.SendWriteCommand(deviceId, serviceId, characteristicId, descriptor, writeValue, sendAsInt)
+      .then((data: string) => {
+
+        var resp = JSON.parse(data);
+        if (resp.Valid && resp.Content != null) {
+          alert(resp.Content);
+        }
+        else if (resp.Valid) {
+          alert(resp.Message.join());
+        }
+        else {
+          alert("Fail to get read Characteristc ");
+        }
+      });
+  }
+
+  function ToogleSubscribeCharacteristic(deviceId: string, serviceId: string, characteristicId: string, descriptor: string) {
+    NativeModules.RnBluetooth.SendCommand(deviceId, serviceId, characteristicId, descriptor)
+      .then((data: string) => {
+
+        var resp = JSON.parse(data);
+        if (resp.Valid && resp.Content != null) {
+          setCharacteristicDescriptor(resp.Content)
+        }
+        else if (resp.Valid) {
+          alert(resp.Message.join());
+        }
+        else {
+          alert("Fail to subscribe Characteristc ");
+        }
+      });
+  }
+
+
 
   //
   const Item = ({ item, onPress, backgroundColor, textColor, fontSize }) => (
     <TouchableOpacity onPress={onPress} style={{
-      ...styles.item, 
-      backgroundColor:backgroundColor}}>
+      ...styles.item,
+      backgroundColor: backgroundColor
+    }}>
       <Text style={{
         ...styles.title,
         color: textColor,
-        fontSize:fontSize
+        fontSize: fontSize
       }}>{item.Name}</Text>
     </TouchableOpacity>
   );
@@ -304,7 +372,7 @@ export default function BleManager() {
     return (
       <Item
         key={index}
-        onPress={() => GetCharacteristicDescriptor(item.DeviceId,item.ServiceId, item.Uuid)}
+        onPress={() => GetCharacteristicDescriptor(item.DeviceId, item.ServiceId, item.Uuid)}
         item={item}
         backgroundColor={"#ffffff"}
         textColor={'black'}
@@ -314,63 +382,114 @@ export default function BleManager() {
   };
 
 
-const RenderCharacteristicDescriptor = ({
-  data
-}:{
-  data:CharacteristicDescriptor[]
-}) => {
 
-  const renderButtonList = () => {
-    return data.map((s:CharacteristicDescriptor,index:number)=>{
+  const toggleSwitch = () => setsendAsInt(previousState => !previousState);
 
-      switch(s.Value){
-       case 'Read':
-         return (
-          <TouchableOpacity key={index} style={{
-            ...styles.item, 
-            backgroundColor:'#ffffff'}}>
-            <Text style={{
-              ...styles.title,
-              color: 'black',
-              fontSize:12
-            }}>Read</Text>
-          </TouchableOpacity>
-         );
-         case 'Write':
-          return (<TouchableOpacity key={index} style={{
-            ...styles.item, 
-            backgroundColor:'#ffffff'}}>
-            <Text style={{
-              ...styles.title,
-              color: 'black',
-              fontSize:12
-            }}>Write</Text>
-          </TouchableOpacity>);
+  const RenderCharacteristicDescriptor = ({
+    data
+  }: {
+    data: CharacteristicDescriptor[]
+  }) => {
+
+    const renderButtonList = () => {
+      return data.map((s: CharacteristicDescriptor, index: number) => {
+
+        
+        switch (s.Value) {
+          case 'Read':
+            return (
+              <View>
+                <Text style={{
+                  ...styles.title,
+                  color: 'black',
+                  fontSize: 12
+                }}>{ReadOutput}</Text>
+                <TouchableOpacity key={index} onPress={() => ReadCharacteristic(s.DeviceId, s.ServiceId, s.CharacteristicUuid, s.Value)}
+                  style={{
+                    ...styles.item,
+                    backgroundColor: '#ffffff'
+                  }}>
+                  <Text style={{
+                    ...styles.title,
+                    color: 'black',
+                    fontSize: 12
+                  }}>Read</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          case 'Write':
+            return (
+
+              <View>
+                <TextInput
+                  key="textinput2"
+                  style={{
+                    width: "100%",
+                    padding: 10,
+                    borderWidth: 1,
+                    marginTop: 20,
+                    marginBottom: 20
+                  }}
+                  onChangeText={text => {
+                    setwriteValue(text);
+                  }}
+                  value={writeValue}
+                />
+
+                <Switch
+                  trackColor={{ false: "#767577", true: "#81b0ff" }}
+                  thumbColor={sendAsInt ? "#f5dd4b" : "#f4f3f4"}
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={toggleSwitch}
+                  value={sendAsInt}
+                />
+
+                <Text style={{
+                  ...styles.title,
+                  color: 'black',
+                  fontSize: 12
+                }}>Send as Int</Text>
+
+                <TouchableOpacity key={index} onPress={() => WriteCharacteristic(s.DeviceId, s.ServiceId, s.CharacteristicUuid, s.Value)}
+                  style={{
+                    ...styles.item,
+                    backgroundColor: '#ffffff'
+                  }}>
+                  <Text style={{
+                    ...styles.title,
+                    color: 'black',
+                    fontSize: 12
+                  }}>Write</Text>
+                </TouchableOpacity>
+              </View>
+            );
           case 'Notify':
-         return (<TouchableOpacity key={index} style={{
-          ...styles.item, 
-          backgroundColor:'#ffffff'}}>
-          <Text style={{
-            ...styles.title,
-            color: 'black',
-            fontSize:12
-          }}>Subscribe</Text>
-        </TouchableOpacity>);  
-       default:
-        return <View key={index} />
-      }
-     
-     });
-  }
+            const subscriptionText = s.SubscriptionState === true ? "Unsubscribe" : "Subscribe";
+            return (<TouchableOpacity key={index}  onPress={() => ToogleSubscribeCharacteristic(s.DeviceId, s.ServiceId, s.CharacteristicUuid, s.Value)}
+              style={{ ...styles.item,
+              backgroundColor: '#ffffff'
+            }}>
+              <Text key={index} style={{
+                ...styles.title,
+                color: 'black',
+                fontSize: 12
+              }}>{ subscriptionText }</Text>
+            </TouchableOpacity>);
+          default:
+            return <View key={index} />
+        }
+
+      });
+    }
 
 
-  return(
+    return (
 
-    <View>
-      {renderButtonList()}
-    </View>
-  );
-};
+      <View>
+        {renderButtonList()}
+      </View>
+    );
+  };
 
 
 

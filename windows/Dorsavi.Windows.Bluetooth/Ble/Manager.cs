@@ -1,26 +1,32 @@
 ﻿using Dorsavi.Windows.Bluetooth.Constants;
 using Dorsavi.Windows.Bluetooth.Models;
-using Dorsavi.Windows.Bluetooth.Sensor.Models;
-using Dorsavi.Windows.Bluetooth.Sensor.V6c;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
-using Windows.Devices.Enumeration;
+using Windows.Security.Cryptography;
+using Windows.Storage.Streams;
 
 namespace Dorsavi.Windows.Bluetooth.Ble
 {
-    public class BleManager
+    public class BleManager : INotifyPropertyChanged, IDisposable
     {
         #region Fields
 
         private bool isConnecting;
 
-        #endregion
+        #endregion Fields
+
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         #region Props
+
         public bool IsConnecting
         {
             get => this.isConnecting;
@@ -31,15 +37,15 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             }
         }
 
-        public static List<BleDevice> ConnectedDevices;
+        public static ObservableCollection<BleDevice> ConnectedDevices;
 
         public BleManager()
         {
-            ConnectedDevices = new List<BleDevice>();
+            ConnectedDevices = new ObservableCollection<BleDevice>();
+            ConnectedDevices.CollectionChanged += ConnectedDevicesChanged;
         }
 
-        #endregion
-
+        #endregion Props
 
         #region Public
 
@@ -53,56 +59,22 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                 response.Valid = false;
                 return response;
             }
-            BluetoothLEDevice bluetoothLeDevice = null;
-            try
+            var device = ConnectedDevices.FirstOrDefault(x => x.Id == deviceId);
+            if (device == null)
             {
-                // BT_Code: BluetoothLEDevice.FromIdAsync must be called from a UI thread because it may prompt for consent.
-                bluetoothLeDevice = await BluetoothLEDevice.FromIdAsync(deviceId);
+                device = new BleDevice();
+                var connectResponse = await device.ConnectAsync(deviceId);
+                if (connectResponse.Valid)
+                    ConnectedDevices.Add(device);
 
-                if (bluetoothLeDevice == null)
-                {
-                    response.Message.Add("Failed to connect to device.");
-                    response.Valid = false;
-                    return response;
-                }
+                response.CopyFrom(connectResponse);
+                //UserNotification(String.Format($"Connected to device {device.Name}, found {device.Services.Count} services"), (int)NotifyType.StatusMessage);
             }
-            catch (Exception ex) when (ex.HResult == ErrorCodes.E_DEVICE_NOT_AVAILABLE)
+            else
             {
-                response.Message.Add("Bluetooth radio is not on.");
+                response.Message.Add($"Device {device.Name} already connected");
                 response.Valid = false;
-                return response;
-            }
-
-            if (bluetoothLeDevice != null)
-            {
-                // Note: BluetoothLEDevice.GattServices property will return an empty list for unpaired devices. For all uses we recommend using the GetGattServicesAsync method.
-                // BT_Code: GetGattServicesAsync returns a list of all the supported services of the device (even if it's not paired to the system).
-                // If the services supported by the device are expected to change during BT usage, subscribe to the GattServicesChanged event.
-                GattDeviceServicesResult result = await bluetoothLeDevice.GetGattServicesAsync(BluetoothCacheMode.Uncached);
-
-                if (result.Status == GattCommunicationStatus.Success)
-                {
-                    response.Valid = true;
-                    var device = ConnectedDevices.FirstOrDefault(x => x.Id == bluetoothLeDevice.DeviceInformation.Id);
-                    if (device == null)
-                    {
-                        device = new BleDevice(bluetoothLeDevice.DeviceInformation, bluetoothLeDevice, result);
-                        ConnectedDevices.Add(device);
-                        //UserNotification(String.Format($"Connected to device {device.Name}, found {device.Services.Count} services"), (int)NotifyType.StatusMessage);
-                    }
-                    else
-                    {
-                        response.Message.Add($"Device {bluetoothLeDevice.DeviceInformation.Name} already connected");
-                        //UserNotification(String.Format($"Device {bluetoothLeDevice.DeviceInformation.Name} already connected"), (int)NotifyType.StatusMessage);
-                    }
-                    response.Content = device;
-                }
-                else
-                {
-                    response.Message.Add("Device unreachable");
-                    response.Valid = false;
-
-                }
+                //UserNotification(String.Format($"Device {bluetoothLeDevice.DeviceInformation.Name} already connected"), (int)NotifyType.StatusMessage);
             }
             IsConnecting = false;
             return response;
@@ -124,25 +96,26 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             try
             {
                 // THIS IS V6C RETURNS hardcoded characteristic
-                if ((selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDE) ||
-                 selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDD) ||
-                 selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDM)) && service.UUid == V6CServiceUuId.Custom.UUid)
-                {
-                    var accessStatus = await service.Service.RequestAccessAsync();
-                    if (accessStatus == DeviceAccessStatus.Allowed)
-                    {
-                        response.Content = V6CCharacteristic.List.Select(x => new BleDeviceCharacteristic
-                        {
-                            Name = x.Name,
-                            Uuid = x.UUid,
-                            DeviceId = deviceId,
-                            ServiceId = serviceId
-                        }).ToList();
+                //if ((selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDE) ||
+                // selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDD) ||
+                // selectedDevice.Name.StartsWith(SensorHardwareTypeNames.MDM)) && service.UUid == V6CServiceUuId.Custom.UUid)
+                //{
+                //    var accessStatus = await service.Service.RequestAccessAsync();
+                //    if (accessStatus == DeviceAccessStatus.Allowed)
+                //    {
+                //        response.Content = V6CCharacteristic.List.Select(x => new BleDeviceCharacteristic
+                //        {
+                //            Name = x.Name,
+                //            Uuid = x.UUid,
+                //            DeviceId = deviceId,
+                //            ServiceId = serviceId
+                //        }).ToList();
 
-                        response.Valid = true;
-                        return response; ;
-                    }
-                }
+                //        response.Valid = true;
+                //        return response; ;
+                //    }
+                //}
+
                 return await service.GetCharacteristicAsync();
             }
             catch (Exception ex)
@@ -172,61 +145,8 @@ namespace Dorsavi.Windows.Bluetooth.Ble
 
                 if (selectedCharacteristic != null)
                 {
-                    try
-                    {
-                        var result = await selectedCharacteristic.GetDescriptorsAsync(BluetoothCacheMode.Uncached);
-                        if (result.Status != GattCommunicationStatus.Success)
-                        {
-                            resp.Message.Add("Descriptor read failure: " + result.Status.ToString());
-                            return resp;
-                        }
-                        GattPresentationFormat presentationFormat;
-                        // BT_Code: There's no need to access presentation format unless there's at least one.
-                        presentationFormat = null;
-                        if (selectedCharacteristic.PresentationFormats.Count > 0)
-                        {
-                            if (selectedCharacteristic.PresentationFormats.Count.Equals(1))
-                            {
-                                // Get the presentation format since there's only one way of presenting it
-                                presentationFormat = selectedCharacteristic.PresentationFormats[0];
-                            }
-                            else
-                            {
-                                // It's difficult to figure out how to split up a characteristic and encode its different parts properly.
-                                // In this case, we'll just encode the whole thing to a string to make it easy to print out.
-                            }
-                        }
+                    return await selectedCharacteristic.GetCharacteristicDescriptorsAsync();
 
-                        var characteristicDescriptors = new List<BleDeviceCharacteristicDescriptor>();
-                        // Enable/disable operations based on the GattCharacteristicProperties.
-                        foreach (var item in CharacteristicPropertiesEnum.List)
-                        {
-                            var gattCharProp = (GattCharacteristicProperties)item.CharacteristicValue;
-                            if (selectedCharacteristic.CharacteristicProperties.HasFlag(gattCharProp))
-                            {
-                                characteristicDescriptors.Add(new BleDeviceCharacteristicDescriptor()
-                                {
-                                    CharacteristicUuid = characteristicUuid,
-                                    DeviceId = deviceId,
-                                    ServiceId = serviceId,
-                                    Value = item.Name
-                                });
-                            }
-                        }
-                        if (characteristicDescriptors.Count > 1 && characteristicDescriptors.Any(x => x.Value == CharacteristicPropertiesEnum.None.CharacteristicValue.ToString()))
-                        {
-                            characteristicDescriptors.Remove(characteristicDescriptors.FirstOrDefault(x => x.Value == CharacteristicPropertiesEnum.None.CharacteristicValue.ToString()));
-                        }
-                        resp.Valid = true;
-                        resp.Content = characteristicDescriptors;
-                    }
-                    catch (Exception ex)
-                    {
-                        resp.Message.Add($"Error, {ex.Message}");
-                        // On error, act as if there are no characteristics.
-                        resp.Content = null;
-                    }
-                    return resp;
                 }
                 resp.Valid = false;
                 resp.Message.Add("Cannot find characteristic");
@@ -240,18 +160,53 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             return resp;
         }
 
-        public async Task<string> SendCommand(string deviceId, string serviceId, string characteristicUuid, CharacteristicPropertiesEnum descriptor)
+        public async Task<ServiceResponse<string>> SendCommand(string deviceId, string serviceId, string characteristicUuid, CharacteristicPropertiesEnum descriptor, string commandValue = "", bool sendAsInt = false)
         {
-            var deviceValid = ValidateConnectedDevice(deviceId);
-            if (!deviceValid.Valid)
-                return JsonConvert.SerializeObject(deviceValid);
+            var resp = new ServiceResponse<string>();
+            var deviceServiceValid = ValidateConnectedDeviceService(deviceId, serviceId);
+            if (!deviceServiceValid.Valid)
+            {
+                resp.Content = "";// resp.CopyFrom(deviceServiceValid);
+            }
+            var service = deviceServiceValid.Content;
 
-            return JsonConvert.SerializeObject(deviceValid);
+            try
+            {
+                if (service.BleCharacteristics == null)
+                    await service.GetCharacteristicAsync();
+                var selectedCharacteristic = service.BleCharacteristics.FirstOrDefault(x => x.Uuid.ToString() == characteristicUuid);
+                if (selectedCharacteristic != null)
+                {
+                    if (descriptor == CharacteristicPropertiesEnum.Read)
+                    {
+                        return await selectedCharacteristic.CharacteristicRead();
+                    }
+                    else if (descriptor == CharacteristicPropertiesEnum.Write)
+                    {
+                        return await selectedCharacteristic.CharacteristicWrite(commandValue, sendAsInt);
+                    }
+                    else if (descriptor == CharacteristicPropertiesEnum.Notify)
+                    {
+                        return resp.CopyFrom(await selectedCharacteristic.ToogleSubscribe());
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resp.Valid = false;
+                resp.Message.Add($"Exception in running command, exception: {ex.Message}");
+            }
+
+            return resp;
         }
 
-        #endregion
+        #endregion Public
 
         #region Private
+
+
+
+
 
         private async Task<bool> ClearBluetoothLEDeviceAsync()
         {
@@ -313,8 +268,150 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             return resp;
         }
 
+        private string FormatValueByPresentation(IBuffer buffer, GattPresentationFormat format)
+        {
+            // BT_Code: For the purpose of this sample, this function converts only UInt32 and
+            // UTF-8 buffers to readable text. It can be extended to support other formats if your app needs them.
+            byte[] data;
+            CryptographicBuffer.CopyToByteArray(buffer, out data);
 
+            if (format != null)
+            {
+                if (format.FormatType == GattPresentationFormatTypes.UInt32 && data.Length >= 4)
+                {
+                    return BitConverter.ToInt32(data, 0).ToString();
+                }
+                else if (format.FormatType == GattPresentationFormatTypes.Utf8)
+                {
+                    try
+                    {
+                        return Encoding.UTF8.GetString(data);
+                    }
+                    catch (ArgumentException)
+                    {
+                        return "(error: Invalid UTF-8 string)";
+                    }
+                }
+                else
+                {
+                    // Add support for other format types as needed.
+                    return "Unsupported format: " + CryptographicBuffer.EncodeToHexString(buffer);
+                }
+            }
+            //else if (data != null)
+            //{
+            //    // We don't know what format to use. Let's try some well-known profiles, or default back to UTF-8.
+            //    if (selectedCharacteristic.Uuid.Equals(GattCharacteristicUuids.HeartRateMeasurement))
+            //    {
+            //        try
+            //        {
+            //            return "Heart Rate: " + ParseHeartRateValue(data).ToString();
+            //        }
+            //        catch (ArgumentException)
+            //        {
+            //            return "Heart Rate: (unable to parse)";
+            //        }
+            //    }
+            //    else if (selectedCharacteristic.Uuid.Equals(GattCharacteristicUuids.BatteryLevel))
+            //    {
+            //        try
+            //        {
+            //            // battery level is encoded as a percentage value in the first byte according to
+            //            // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.battery_level.xml
+            //            return "Battery Level: " + data[0].ToString() + "%";
+            //        }
+            //        catch (ArgumentException)
+            //        {
+            //            return "Battery Level: (unable to parse)";
+            //        }
+            //    }
+            //    // This is our custom calc service Result UUID. Format it like an Int
+            //    else if (selectedCharacteristic.Uuid.Equals(Constants.ResultCharacteristicUuid))
+            //    {
+            //        return BitConverter.ToInt32(data, 0).ToString();
+            //    }
+            //    // No guarantees on if a characteristic is registered for notifications.
+            //    else if (registeredCharacteristic != null)
+            //    {
+            //        // This is our custom calc service Result UUID. Format it like an Int
+            //        if (registeredCharacteristic.Uuid.Equals(Constants.ResultCharacteristicUuid))
+            //        {
+            //            return BitConverter.ToInt32(data, 0).ToString();
+            //        }
+            //    }
+            //    else
+            //    {
+            //        return CryptographicBuffer.EncodeToHexString(buffer);
 
-        #endregion
+            //        try
+            //        {
+            //            return "Unknown format: " + Encoding.UTF8.GetString(data);
+            //        }
+            //        catch (ArgumentException)
+            //        {
+            //            return "Unknown format";
+            //        }
+            //    }
+            //}
+            else
+            {
+                return "Empty data received";
+            }
+            return "Unknown format";
+        }
+
+        private void ConnectedDevicesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            bool connectedChanges = false;
+            if (e.NewItems != null)
+            {
+                foreach (BleDevice item in e.NewItems)
+                {
+                    item.PropertyChanged += ConnectedDevicelPropertyChanged;
+                }
+                connectedChanges = true;
+            }
+            if (e.OldItems != null)
+            {
+                foreach (var y in e.OldItems)
+                {
+                    // device removed
+                }
+                connectedChanges = true;
+            }
+            if (e.Action == NotifyCollectionChangedAction.Move)
+            {
+                //do something
+            }
+
+            if (connectedChanges)
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ConnectedDevices"));
+        }
+
+        public void ConnectedDevicelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // device disconnected
+            if (sender.GetType() == typeof(BleDevice))
+            {
+                BleDevice device = (BleDevice)sender;
+                if (e.PropertyName == "IsConnected" && device.IsConnected.HasValue && !device.IsConnected.Value)
+                    ConnectedDevices.Remove(device);
+                else
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ConnectedDevices"));
+            }
+
+            //This will get called when the property of an object inside the collection changes
+        }
+
+        public void Dispose()
+        {
+            ConnectedDevices.CollectionChanged -= ConnectedDevicesChanged;
+            foreach (var item in ConnectedDevices)
+            {
+                item.Dispose();
+            }
+        }
+
+        #endregion Private
     }
 }

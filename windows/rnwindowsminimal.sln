@@ -36,6 +36,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.ReactNative.Manag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dorsavi.Windows.Bluetooth", "Dorsavi.Windows.Bluetooth\Dorsavi.Windows.Bluetooth.csproj", "{BC88C459-B46C-4840-A510-5D100C221820}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dorsavi.Windows.Framework", "Dorsavi.Windows.Framework\Dorsavi.Windows.Framework.csproj", "{B5693160-4D42-4299-A0B7-836F3EF170FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -262,6 +264,26 @@ Global
 		{BC88C459-B46C-4840-A510-5D100C221820}.Release|x64.Build.0 = Release|x64
 		{BC88C459-B46C-4840-A510-5D100C221820}.Release|x86.ActiveCfg = Release|x86
 		{BC88C459-B46C-4840-A510-5D100C221820}.Release|x86.Build.0 = Release|x86
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|ARM.Build.0 = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|x64.Build.0 = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Debug|x86.Build.0 = Debug|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|ARM.Build.0 = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|ARM64.Build.0 = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|x64.ActiveCfg = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|x64.Build.0 = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|x86.ActiveCfg = Release|Any CPU
+		{B5693160-4D42-4299-A0B7-836F3EF170FA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

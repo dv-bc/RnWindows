@@ -120,6 +120,8 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Ble\BleDeviceCharacteristic.cs" />
+    <Compile Include="Ble\BleDeviceServices.cs" />
     <Compile Include="Ble\Device.cs" />
     <Compile Include="Ble\Manager.cs" />
     <Compile Include="Common\DisplayHelpers.cs" />
@@ -133,6 +135,7 @@
     <Compile Include="Sensor\Models\SensorHardwareTypeNames.cs" />
     <Compile Include="Sensor\V6c\Characteristic.cs" />
     <Compile Include="Sensor\V6c\Services.cs" />
+    <Compile Include="Sensor\V6c\V6cDeviceServices.cs" />
     <EmbeddedResource Include="Properties\Dorsavi.Windows.Bluetooth.rd.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -146,7 +149,12 @@
       <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Dorsavi.Windows.Framework\Dorsavi.Windows.Framework.csproj">
+      <Project>{b5693160-4d42-4299-a0b7-836f3ef170fa}</Project>
+      <Name>Dorsavi.Windows.Framework</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
