@@ -166,6 +166,12 @@
           "Ardalis.SmartEnum": "2.1.0"
         }
       },
+      "Examples.Media.Capture": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.NETCore.UniversalWindowsPlatform": "6.2.3"
+        }
+      },
       "fmt": {
         "type": "Project"
       },

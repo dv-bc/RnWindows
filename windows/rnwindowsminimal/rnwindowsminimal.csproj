@@ -170,6 +170,10 @@
       <Project>{b5693160-4d42-4299-a0b7-836f3ef170fa}</Project>
       <Name>Dorsavi.Windows.Framework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ExampleMediaCapture\ExampleMediaCapture.csproj">
+      <Project>{9bdbf6dc-2700-4ac4-abf4-00c807f49910}</Project>
+      <Name>ExampleMediaCapture</Name>
+    </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ReactNativeWindowsTargets">
     <Import Project="$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CSharpApp.targets" Condition="Exists('$(ReactNativeWindowsDir)\PropertySheets\External\Microsoft.ReactNative.Uwp.CSharpApp.targets')" />
