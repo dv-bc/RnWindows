@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { NativeModules, NativeEventEmitter } from 'react-native';
-
+import { Buffer } from 'buffer';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -252,7 +252,8 @@ export default function BleManager() {
 
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
-          setReadOutput(resp.Content);
+          var output = Buffer.from(resp.Content, 'base64'); //Buffer.from(resp.Content,'base64')          
+          setReadOutput(output);
         }
         else if (resp.Valid) {
           alert(resp.Message.join());
@@ -264,7 +265,10 @@ export default function BleManager() {
   }
 
   function WriteCharacteristic(deviceId: string, serviceId: string, characteristicId: string, descriptor: string) {
-    NativeModules.RnBluetooth.SendWriteCommand(deviceId, serviceId, characteristicId, descriptor, writeValue, sendAsInt)
+    var writeArray  = new Int8Array([3,3,3,3,3,3]);
+    var data = Buffer.from(writeArray);
+    
+    NativeModules.RnBluetooth.SendCommand(deviceId, serviceId, characteristicId, descriptor, data.toString('base64'), sendAsInt)
       .then((data: string) => {
 
         var resp = JSON.parse(data);
@@ -280,13 +284,14 @@ export default function BleManager() {
       });
   }
 
-  function ToogleSubscribeCharacteristic(deviceId: string, serviceId: string, characteristicId: string, descriptor: string) {
-    NativeModules.RnBluetooth.SendCommand(deviceId, serviceId, characteristicId, descriptor)
-      .then((data: string) => {
 
+  function ToogleSubscribeCharacteristic(deviceId: string, serviceId: string, characteristicId: string, descriptor: string, isStart: boolean) {
+
+    if (isStart) {
+      NativeModules.RnBluetooth.SendCommand(deviceId, serviceId, "00000006-0008-a8ba-e311-f48c90364d99", new Int8Array(1)).then((data: string) => {
         var resp = JSON.parse(data);
         if (resp.Valid && resp.Content != null) {
-          setCharacteristicDescriptor(resp.Content)
+          console.log(resp.Content)
         }
         else if (resp.Valid) {
           alert(resp.Message.join());
@@ -295,6 +300,37 @@ export default function BleManager() {
           alert("Fail to subscribe Characteristc ");
         }
       });
+
+    }
+    else {
+      NativeModules.RnBluetooth.SendCommand(deviceId, serviceId, "00000006-0008-a8ba-e311-f48c90364d99", new Int8Array(0)).then((data: string) => {
+        var resp = JSON.parse(data);
+        if (resp.Valid && resp.Content != null) {
+          console.log(resp.Content)
+        }
+        else if (resp.Valid) {
+          alert(resp.Message.join());
+        }
+        else {
+          alert("Fail to subscribe Characteristc ");
+        }
+      });
+    }
+
+
+    NativeModules.RnBluetooth.SendCommand(deviceId, serviceId, characteristicId, descriptor).then((data: string) => {
+
+      var resp = JSON.parse(data);
+      if (resp.Valid && resp.Content != null) {
+        setCharacteristicDescriptor(resp.Content)
+      }
+      else if (resp.Valid) {
+        alert(resp.Message.join());
+      }
+      else {
+        alert("Fail to subscribe Characteristc ");
+      }
+    });
   }
 
 
@@ -394,7 +430,7 @@ export default function BleManager() {
     const renderButtonList = () => {
       return data.map((s: CharacteristicDescriptor, index: number) => {
 
-        
+
         switch (s.Value) {
           case 'Read':
             return (
@@ -465,15 +501,17 @@ export default function BleManager() {
             );
           case 'Notify':
             const subscriptionText = s.SubscriptionState === true ? "Unsubscribe" : "Subscribe";
-            return (<TouchableOpacity key={index}  onPress={() => ToogleSubscribeCharacteristic(s.DeviceId, s.ServiceId, s.CharacteristicUuid, s.Value)}
-              style={{ ...styles.item,
-              backgroundColor: '#ffffff'
-            }}>
+
+            return (<TouchableOpacity key={index} onPress={() => ToogleSubscribeCharacteristic(s.DeviceId, s.ServiceId, s.CharacteristicUuid, s.Value, !s.SubscriptionState)}
+              style={{
+                ...styles.item,
+                backgroundColor: '#ffffff'
+              }}>
               <Text key={index} style={{
                 ...styles.title,
                 color: 'black',
                 fontSize: 12
-              }}>{ subscriptionText }</Text>
+              }}>{subscriptionText}</Text>
             </TouchableOpacity>);
           default:
             return <View key={index} />

@@ -7,7 +7,9 @@ namespace Dorsavi.Windows.Framework.PubSub
     {
         public string SubscriberName { get; private set; }
 
-        public event EventHandler NotificationReceived;
+        public delegate void Notice(Publisher p, NotificationEvent e);
+
+        public event Notice NotificationReceived;
 
         public Subscriber(string _subscriberName)
         {
@@ -26,7 +28,7 @@ namespace Dorsavi.Windows.Framework.PubSub
 
         protected virtual void OnNotificationReceived(Publisher p, NotificationEvent e)
         {
-            NotificationReceived?.Invoke(this, e);
+            NotificationReceived(p, e);
             //Console.WriteLine(SubscriberName + ", " + e.NotificationMessage + " - " + p.PublisherName + " at " + e.NotificationDate);
         }
     }
