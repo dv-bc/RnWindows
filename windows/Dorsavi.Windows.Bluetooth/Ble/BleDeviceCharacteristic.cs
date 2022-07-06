@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
@@ -15,7 +16,7 @@ using Windows.Storage.Streams;
 
 namespace Dorsavi.Windows.Bluetooth.Ble
 {
-    public class BleDeviceCharacteristic
+    public class BleDeviceCharacteristic : IDisposable
     {
         private readonly List<Publisher> _publishers;
         private readonly Subscriber _subscriber;
@@ -189,6 +190,17 @@ namespace Dorsavi.Windows.Bluetooth.Ble
             }
             return resp;
         }
+        public byte[] GetByteArrayFromHexCode(string hexCode)
+        {
+            int hexLength = hexCode.Length;
+            byte[] bytes = new byte[hexLength / 2];
+            for (int i = 0; i < hexLength; i += 2)
+            {
+                bytes[i / 2] = Convert.ToByte(hexCode.Substring(i, 2), 16);
+            }
+
+            return bytes;
+        }
 
         public async Task<ServiceResponse<string>> CharacteristicWrite(string characteristicWriteValue, bool sendAsInt)
         {
@@ -207,6 +219,10 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                             var writer = new DataWriter();
                             writer.ByteOrder = ByteOrder.LittleEndian;
                             writer.WriteInt32(readValue);
+                            writer.WriteUInt32(5);
+
+
+
                             result = await Characteristic.WriteValueWithResultAsync(writer.DetachBuffer());
                         }
                         else
@@ -217,11 +233,8 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                     }
                     else
                     {
-                        var writeBuffer = CryptographicBuffer.ConvertStringToBinary(characteristicWriteValue,
-                                BinaryStringEncoding.Utf8);
-
                         // BT_Code: Writes the value from the buffer to the characteristic.
-                        result = await Characteristic.WriteValueWithResultAsync(writeBuffer);
+                        result = await Characteristic.WriteValueWithResultAsync(CryptographicBuffer.DecodeFromBase64String(characteristicWriteValue));
                     }
 
                     if (result.Status == GattCommunicationStatus.Success)
@@ -314,10 +327,8 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                 byte[] data;
                 CryptographicBuffer.CopyToByteArray(result.Value, out data);
 
-                var resultAsString = Convert.ToBase64String(data);
-                byte[] resultAsByte = Convert.FromBase64String(resultAsString);
-
-                resp.Content = resultAsString;
+                resp.Content = Convert.ToBase64String(data);
+                //resp.Content = BitConverter.ToString(data).Replace("-", string.Empty);
                 resp.Valid = true;
             }
             else
@@ -326,6 +337,11 @@ namespace Dorsavi.Windows.Bluetooth.Ble
                 resp.Message.Add($"Read failed: {result.Status}");
             }
             return resp;
+        }
+
+        public void Dispose()
+        {
+            Characteristic = null;
         }
 
         #endregion Private
