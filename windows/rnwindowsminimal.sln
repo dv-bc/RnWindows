@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.ReactNative.Manag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dorsavi.Windows.Bluetooth", "Dorsavi.Windows.Bluetooth\Dorsavi.Windows.Bluetooth.csproj", "{BC88C459-B46C-4840-A510-5D100C221820}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dorsavi.Windows.Framework", "Dorsavi.Windows.Framework\Dorsavi.Windows.Framework.csproj", "{B5693160-4D42-4299-A0B7-836F3EF170FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dorsavi.Windows.Framework", "Dorsavi.Windows.Framework\Dorsavi.Windows.Framework.csproj", "{B5693160-4D42-4299-A0B7-836F3EF170FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

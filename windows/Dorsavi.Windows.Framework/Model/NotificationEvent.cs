@@ -9,13 +9,15 @@ namespace Dorsavi.Windows.Framework.Model
 
         public DateTime NotificationDate { get; private set; }
 
+        public string PublisherName { get; private set; }
         public PublisherType PublisherType { get; private set; }
 
-        public NotificationEvent(DateTime _dateTime, string _message, PublisherType publisherType)
+        public NotificationEvent(DateTime _dateTime, string _message, PublisherType publisherType, string publisherName)
         {
             NotificationDate = _dateTime;
             NotificationMessage = _message;
             PublisherType = publisherType;
+            PublisherName = publisherName;
         }
     }
 }

@@ -46,7 +46,7 @@ namespace Dorsavi.Windows.Framework.PubSub
 
             if (OnPublish != null)
             {
-                NotificationEvent notificationObj = new NotificationEvent(DateTime.Now, message, PublisherType);
+                NotificationEvent notificationObj = new NotificationEvent(DateTime.Now, message, PublisherType, PublisherName);
                 OnPublish(this, notificationObj);
             }
             //Thread.Yield();

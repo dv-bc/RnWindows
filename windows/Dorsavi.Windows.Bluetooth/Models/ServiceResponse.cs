@@ -137,7 +137,6 @@ namespace Dorsavi.Windows.Bluetooth.Models
                 Message = messages.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList()
             };
 
-
             return resp;
         }
     }
