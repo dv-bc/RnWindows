@@ -1,4 +1,4 @@
-﻿namespace Dorsavi.Windows.Framework.Infrastructure
+﻿namespace Dorsavi.Win.Framework.Infrastructure
 {
     /// <summary>
     /// A statically compiled "singleton" used to store objects throughout the

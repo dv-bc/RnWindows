@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
+namespace Dorsavi.Win.Bluetooth.Sensor.V6c
 {
     public class V6CCharacteristic : SmartEnum<V6CCharacteristic>
     {

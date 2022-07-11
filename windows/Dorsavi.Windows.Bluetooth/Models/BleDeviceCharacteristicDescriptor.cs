@@ -1,4 +1,4 @@
-﻿namespace Dorsavi.Windows.Bluetooth.Models
+﻿namespace Dorsavi.Win.Bluetooth.Models
 {
     public class BleDeviceCharacteristicDescriptor
     {

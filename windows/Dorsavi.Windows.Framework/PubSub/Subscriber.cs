@@ -1,7 +1,7 @@
-﻿using Dorsavi.Windows.Framework.Model;
+﻿using Dorsavi.Win.Framework.Model;
 using System;
 
-namespace Dorsavi.Windows.Framework.PubSub
+namespace Dorsavi.Win.Framework.PubSub
 {
     public class Subscriber
     {

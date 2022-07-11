@@ -1,4 +1,4 @@
-﻿namespace Dorsavi.Windows.Bluetooth.Sensor.Models
+﻿namespace Dorsavi.Win.Bluetooth.Sensor.Models
 {
     public class SensorHardwareTypeNames
     {

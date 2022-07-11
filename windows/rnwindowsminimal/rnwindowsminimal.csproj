@@ -162,13 +162,13 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\Dorsavi.Windows.Bluetooth\Dorsavi.Windows.Bluetooth.csproj">
+    <ProjectReference Include="..\Dorsavi.Windows.Bluetooth\Dorsavi.Win.Bluetooth.csproj">
       <Project>{bc88c459-b46c-4840-a510-5d100c221820}</Project>
-      <Name>Dorsavi.Windows.Bluetooth</Name>
+      <Name>Dorsavi.Win.Bluetooth</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Dorsavi.Windows.Framework\Dorsavi.Windows.Framework.csproj">
+    <ProjectReference Include="..\Dorsavi.Windows.Framework\Dorsavi.Win.Framework.csproj">
       <Project>{b5693160-4d42-4299-a0b7-836f3ef170fa}</Project>
-      <Name>Dorsavi.Windows.Framework</Name>
+      <Name>Dorsavi.Win.Framework</Name>
     </ProjectReference>
     <ProjectReference Include="..\ExampleMediaCapture\ExampleMediaCapture.csproj">
       <Project>{9bdbf6dc-2700-4ac4-abf4-00c807f49910}</Project>

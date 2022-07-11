@@ -7,8 +7,8 @@
     <ProjectGuid>{BC88C459-B46C-4840-A510-5D100C221820}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dorsavi.Windows.Bluetooth</RootNamespace>
-    <AssemblyName>Dorsavi.Windows.Bluetooth</AssemblyName>
+    <RootNamespace>Dorsavi.Win.Bluetooth</RootNamespace>
+    <AssemblyName>Dorsavi.Win.Bluetooth</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.20348.0</TargetPlatformVersion>
@@ -150,9 +150,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Dorsavi.Windows.Framework\Dorsavi.Windows.Framework.csproj">
+    <ProjectReference Include="..\Dorsavi.Windows.Framework\Dorsavi.Win.Framework.csproj">
       <Project>{b5693160-4d42-4299-a0b7-836f3ef170fa}</Project>
-      <Name>Dorsavi.Windows.Framework</Name>
+      <Name>Dorsavi.Win.Framework</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

@@ -1,8 +1,8 @@
-﻿using Dorsavi.Windows.Bluetooth.Constants;
-using Dorsavi.Windows.Bluetooth.Models;
-using Dorsavi.Windows.Framework.Infrastructure;
-using Dorsavi.Windows.Framework.Model;
-using Dorsavi.Windows.Framework.PubSub;
+﻿using Dorsavi.Win.Bluetooth.Constants;
+using Dorsavi.Win.Bluetooth.Models;
+using Dorsavi.Win.Framework.Infrastructure;
+using Dorsavi.Win.Framework.Model;
+using Dorsavi.Win.Framework.PubSub;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,7 +10,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Dorsavi.Windows.Bluetooth.Ble
+namespace Dorsavi.Win.Bluetooth.Ble
 {
     public class BleManager : IDisposable
     {

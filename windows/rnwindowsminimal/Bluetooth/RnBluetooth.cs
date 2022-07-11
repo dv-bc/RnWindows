@@ -1,9 +1,9 @@
-﻿using Dorsavi.Windows.Bluetooth.Ble;
-using Dorsavi.Windows.Bluetooth.Constants;
-using Dorsavi.Windows.Bluetooth.Models;
-using Dorsavi.Windows.Framework.Infrastructure;
-using Dorsavi.Windows.Framework.Model;
-using Dorsavi.Windows.Framework.PubSub;
+﻿using Dorsavi.Win.Bluetooth.Ble;
+using Dorsavi.Win.Bluetooth.Constants;
+using Dorsavi.Win.Bluetooth.Models;
+using Dorsavi.Win.Framework.Infrastructure;
+using Dorsavi.Win.Framework.Model;
+using Dorsavi.Win.Framework.PubSub;
 using Microsoft.ReactNative.Managed;
 using Newtonsoft.Json;
 using rnwindowsminimal.Constants;

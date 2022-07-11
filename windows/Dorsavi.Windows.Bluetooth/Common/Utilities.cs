@@ -1,7 +1,7 @@
 ﻿using System;
 using Windows.Storage.Streams;
 
-namespace Dorsavi.Windows.Bluetooth.Common
+namespace Dorsavi.Win.Bluetooth.Common
 {
     public static class Utilities
     {

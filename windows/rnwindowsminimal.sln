@@ -34,11 +34,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.ReactNative.Manag
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.ReactNative.Managed.CodeGen", "..\node_modules\react-native-windows\Microsoft.ReactNative.Managed.CodeGen\Microsoft.ReactNative.Managed.CodeGen.csproj", "{ADED4FBE-887D-4271-AF24-F0823BCE7961}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dorsavi.Windows.Bluetooth", "Dorsavi.Windows.Bluetooth\Dorsavi.Windows.Bluetooth.csproj", "{BC88C459-B46C-4840-A510-5D100C221820}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dorsavi.Win.Bluetooth", "Dorsavi.Windows.Bluetooth\Dorsavi.Win.Bluetooth.csproj", "{BC88C459-B46C-4840-A510-5D100C221820}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dorsavi.Windows.Framework", "Dorsavi.Windows.Framework\Dorsavi.Windows.Framework.csproj", "{B5693160-4D42-4299-A0B7-836F3EF170FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dorsavi.Win.Framework", "Dorsavi.Windows.Framework\Dorsavi.Win.Framework.csproj", "{B5693160-4D42-4299-A0B7-836F3EF170FA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleMediaCapture", "ExampleMediaCapture\ExampleMediaCapture.csproj", "{9BDBF6DC-2700-4AC4-ABF4-00C807F49910}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dorsavi.Win.Mongo", "Dorsavi.Win.Mongo\Dorsavi.Win.Mongo.csproj", "{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -306,6 +308,26 @@ Global
 		{9BDBF6DC-2700-4AC4-ABF4-00C807F49910}.Release|x64.Build.0 = Release|x64
 		{9BDBF6DC-2700-4AC4-ABF4-00C807F49910}.Release|x86.ActiveCfg = Release|x86
 		{9BDBF6DC-2700-4AC4-ABF4-00C807F49910}.Release|x86.Build.0 = Release|x86
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|ARM.Build.0 = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|x64.Build.0 = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Debug|x86.Build.0 = Debug|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|ARM.Build.0 = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|ARM64.Build.0 = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|x64.ActiveCfg = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|x64.Build.0 = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|x86.ActiveCfg = Release|Any CPU
+		{9847E5E6-6B2C-4774-AE5C-FEBAD7188712}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

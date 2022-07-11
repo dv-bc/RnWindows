@@ -1,9 +1,9 @@
-﻿using Dorsavi.Windows.Bluetooth.Constants;
-using Dorsavi.Windows.Bluetooth.Models;
-using Dorsavi.Windows.Bluetooth.Sensor.Models;
-using Dorsavi.Windows.Bluetooth.Sensor.V6c;
-using Dorsavi.Windows.Framework.Infrastructure;
-using Dorsavi.Windows.Framework.PubSub;
+﻿using Dorsavi.Win.Bluetooth.Constants;
+using Dorsavi.Win.Bluetooth.Sensor.Models;
+using Dorsavi.Win.Bluetooth.Sensor.V6c;
+using Dorsavi.Win.Framework.Infrastructure;
+using Dorsavi.Win.Framework.Model;
+using Dorsavi.Win.Framework.PubSub;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 
-namespace Dorsavi.Windows.Bluetooth.Ble
+namespace Dorsavi.Win.Bluetooth.Ble
 {
     public class BleDevice : IDisposable
     {

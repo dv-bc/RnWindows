@@ -1,7 +1,7 @@
-﻿using Dorsavi.Windows.Bluetooth.Ble;
+﻿using Dorsavi.Win.Bluetooth.Ble;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
-namespace Dorsavi.Windows.Bluetooth.Sensor.V6c
+namespace Dorsavi.Win.Bluetooth.Sensor.V6c
 {
     public class V6cDeviceServices : BleDeviceServices
     {

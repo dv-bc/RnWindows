@@ -1,8 +1,8 @@
-﻿using Dorsavi.Windows.Bluetooth.Constants;
+﻿using Dorsavi.Win.Bluetooth.Constants;
 using System;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 
-namespace Dorsavi.Windows.Bluetooth.Common
+namespace Dorsavi.Win.Bluetooth.Common
 {
     /// <summary>
     /// Helpers for formatting information for display.

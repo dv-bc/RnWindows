@@ -1,6 +1,6 @@
 ﻿using Ardalis.SmartEnum;
 
-namespace Dorsavi.Windows.Bluetooth.Constants
+namespace Dorsavi.Win.Bluetooth.Constants
 {
     public class CharacteristicPropertiesEnum : SmartEnum<CharacteristicPropertiesEnum>
     {

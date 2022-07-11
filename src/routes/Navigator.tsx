@@ -34,7 +34,7 @@ export default function Navigator() {
             case 'ble':
                 return <BleManager />
             case 'camera':
-                return <Camera />
+                return <BleManager />
             default:
                 return <BleManager />
         }

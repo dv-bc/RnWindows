@@ -1,8 +1,8 @@
 ﻿using Ardalis.SmartEnum;
-using Dorsavi.Windows.Framework.Model;
+using Dorsavi.Win.Framework.Model;
 using System;
 
-namespace Dorsavi.Windows.Framework.PubSub
+namespace Dorsavi.Win.Framework.PubSub
 {
     public class PublisherType : SmartEnum<PublisherType>
     {
@@ -13,6 +13,7 @@ namespace Dorsavi.Windows.Framework.PubSub
         public static readonly PublisherType PropertyChanged = new PublisherType("PropertyChanged", 1);
         public static readonly PublisherType SubscriptionValue = new PublisherType("SubscriptionValue", 2);
         public static readonly PublisherType ConnectedDevice = new PublisherType("ConnectedDevice", 3);
+        public static readonly PublisherType NewMongo = new PublisherType("ConnectedDevice", 3);
     }
 
     public class Publisher
@@ -47,6 +48,19 @@ namespace Dorsavi.Windows.Framework.PubSub
             if (OnPublish != null)
             {
                 NotificationEvent notificationObj = new NotificationEvent(DateTime.Now, message, PublisherType, PublisherName);
+                OnPublish(this, notificationObj);
+            }
+            //Thread.Yield();
+        }
+
+        public void Publish(string message, object Content)
+        {
+            // fire event after certain interval
+            //Thread.Sleep(NotificationInterval);
+
+            if (OnPublish != null)
+            {
+                NotificationEvent notificationObj = new NotificationEvent(DateTime.Now, message, PublisherType, PublisherName, Content);
                 OnPublish(this, notificationObj);
             }
             //Thread.Yield();

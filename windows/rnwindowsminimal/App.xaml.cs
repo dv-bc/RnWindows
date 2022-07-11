@@ -1,5 +1,5 @@
-using Dorsavi.Windows.Framework.Infrastructure;
-using Dorsavi.Windows.Framework.PubSub;
+using Dorsavi.Win.Framework.Infrastructure;
+using Dorsavi.Win.Framework.PubSub;
 using Microsoft.ReactNative;
 using System.Collections.Generic;
 #if USE_WINUI3

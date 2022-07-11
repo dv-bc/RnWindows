@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Dorsavi.Windows.Framework.Infrastructure
+namespace Dorsavi.Win.Framework.Infrastructure
 {
     /// <summary>
     /// Provides access to all "singletons" stored by <see cref="Singleton{T}"/>.

@@ -1,7 +1,7 @@
-﻿using Dorsavi.Windows.Framework.PubSub;
+﻿using Dorsavi.Win.Framework.PubSub;
 using System;
 
-namespace Dorsavi.Windows.Framework.Model
+namespace Dorsavi.Win.Framework.Model
 {
     public class NotificationEvent : EventArgs
     {
@@ -11,6 +11,7 @@ namespace Dorsavi.Windows.Framework.Model
 
         public string PublisherName { get; private set; }
         public PublisherType PublisherType { get; private set; }
+        public Object Content { get; private set; }
 
         public NotificationEvent(DateTime _dateTime, string _message, PublisherType publisherType, string publisherName)
         {
@@ -19,5 +20,11 @@ namespace Dorsavi.Windows.Framework.Model
             PublisherType = publisherType;
             PublisherName = publisherName;
         }
+        public NotificationEvent(DateTime _dateTime, string _message, PublisherType publisherType, string publisherName, object content) : this(_dateTime, _message, publisherType, publisherName)
+        {
+            Content = content;
+        }
     }
+
+
 }

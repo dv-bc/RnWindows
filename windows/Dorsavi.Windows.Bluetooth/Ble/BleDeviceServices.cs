@@ -1,6 +1,6 @@
-﻿using Dorsavi.Windows.Bluetooth.Common;
-using Dorsavi.Windows.Bluetooth.Models;
-using Dorsavi.Windows.Bluetooth.Sensor.V6c;
+﻿using Dorsavi.Win.Bluetooth.Common;
+using Dorsavi.Win.Bluetooth.Sensor.V6c;
+using Dorsavi.Win.Framework.Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
 
-namespace Dorsavi.Windows.Bluetooth.Ble
+namespace Dorsavi.Win.Bluetooth.Ble
 {
     public class BleDeviceServices : IDisposable
     {
