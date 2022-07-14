@@ -6,7 +6,7 @@ using System;
 
 namespace rnwindowsminimal.Common
 {
-    public class Events : BaseSubscriber
+    public class Events : BasePublisher
     {
         public Events() : base()
         {
@@ -26,7 +26,7 @@ namespace rnwindowsminimal.Common
                 var notificationEvent = (NotificationEvent)e;
                 if (notificationEvent.PublisherType == PublisherType.EventPublisher)
                 {
-                    Event(JsonConvert.SerializeObject(notificationEvent));
+                    Event(notificationEvent.NotificationMessage);
                 }
                 else if (notificationEvent.PublisherType == PublisherType.NotificationPublisher)
                 {
