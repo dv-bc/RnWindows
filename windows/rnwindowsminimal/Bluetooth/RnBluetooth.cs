@@ -1,12 +1,9 @@
 ﻿using Dorsavi.Win.Bluetooth.Ble;
 using Dorsavi.Win.Bluetooth.Constants;
-using Dorsavi.Win.Bluetooth.Models;
-using Dorsavi.Win.Framework.Infrastructure;
 using Dorsavi.Win.Framework.Model;
 using Dorsavi.Win.Framework.PubSub;
 using Microsoft.ReactNative.Managed;
 using Newtonsoft.Json;
-using rnwindowsminimal.Constants;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,15 +23,13 @@ namespace rnwindowsminimal.Bluetooth
     /// React module that consumes bluetooth manager class
     /// </summary>
     [ReactModule]
-    public class RnBluetooth
+    public class RnBluetooth : BasePublisher
     {
         private readonly BleManager _bleManager;
 
-        private readonly Subscriber _subscriber;
 
-        public RnBluetooth()
+        public RnBluetooth() : base()
         {
-            _subscriber = Singleton<Subscriber>.Instance;
             _subscriber.NotificationReceived += NotificationReceived;
 
             _bleManager = new BleManager();
@@ -43,11 +38,7 @@ namespace rnwindowsminimal.Bluetooth
 
         #region React Events
 
-        [ReactEvent]
-        public Action<string> Event { get; set; }
 
-        [ReactEvent]
-        public Action<string, int> UserNotification { get; set; }
 
         [ReactEvent]
         public Action<bool> IsScanningEvent { get; set; }
@@ -156,15 +147,15 @@ namespace rnwindowsminimal.Bluetooth
         {
             if (!IsScanning)
             {
-                Event("Start enumerating");
+                Publish(PublisherType.EventPublisher, "Start enumerating");
                 StartBleDeviceWatcher();
-                UserNotification($"Device watcher started.", (int)(int)NotifyType.StatusMessage);
+                Publish(PublisherType.EventPublisher, $"Device watcher started.");
             }
             else
             {
-                UserNotification("User canceled scan", (int)(int)NotifyType.StatusMessage);
+                Publish(PublisherType.EventPublisher, "User canceled scan");
                 StopBleDeviceWatcher();
-                UserNotification($"Device watcher stopped.", (int)(int)NotifyType.StatusMessage);
+                Publish(PublisherType.EventPublisher, $"Device watcher stopped.");
             }
         }
 
@@ -410,8 +401,7 @@ namespace rnwindowsminimal.Bluetooth
             {
                 var message = $"{knownDevices.Count} devices found. Enumeration completed.";
                 DeviceEnumerationCompleted(message);
-                UserNotification(message,
-                    (int)NotifyType.StatusMessage);
+                Publish(PublisherType.EventPublisher, message);
 
                 this.IsScanning = false;
 
@@ -427,8 +417,7 @@ namespace rnwindowsminimal.Bluetooth
             // Protect against race condition if the task runs after the app stopped the deviceWatcher.
             if (sender == deviceWatcher)
             {
-                UserNotification($"No longer watching for devices.",
-                        sender.Status == DeviceWatcherStatus.Aborted ? (int)NotifyType.ErrorMessage : (int)NotifyType.StatusMessage);
+                Publish(PublisherType.EventPublisher, $"No longer watching for devices.");
 
                 this.IsScanning = false;
             }
@@ -450,7 +439,7 @@ namespace rnwindowsminimal.Bluetooth
             // Display the new value with a timestamp.
             var newValue = FormatValueByPresentation(args.CharacteristicValue, presentationFormat);
             var message = $"Value at {DateTime.Now:hh:mm:ss.FFF}: {newValue}";
-            UserNotification(message, (int)NotifyType.StatusMessage);
+            Publish(PublisherType.EventPublisher, message);
             //CharacteristicLatestValue.Text = message;
 
             //await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -660,8 +649,6 @@ namespace rnwindowsminimal.Bluetooth
                 else if (notificationEvent.PublisherType == PublisherType.ConnectedDevice)
                     ConnectedDevicesUpdated(JsonConvert.SerializeObject(BleManager.ConnectedDevices));
             }
-            else
-                UserNotification("we got notification", (int)(int)NotifyType.StatusMessage);
         }
 
         #endregion Private

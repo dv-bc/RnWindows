@@ -13,7 +13,12 @@ namespace Dorsavi.Win.Framework.PubSub
         public static readonly PublisherType PropertyChanged = new PublisherType("PropertyChanged", 1);
         public static readonly PublisherType SubscriptionValue = new PublisherType("SubscriptionValue", 2);
         public static readonly PublisherType ConnectedDevice = new PublisherType("ConnectedDevice", 3);
-        public static readonly PublisherType NewMongo = new PublisherType("ConnectedDevice", 3);
+        public static readonly PublisherType NewMongo = new PublisherType("Realm", 4);
+
+        // error message, need action from user
+        public static readonly PublisherType NotificationPublisher = new PublisherType("Notification", 5);
+        // event
+        public static readonly PublisherType EventPublisher = new PublisherType("Event", 6);
     }
 
     public class Publisher

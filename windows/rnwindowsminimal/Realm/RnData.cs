@@ -1,32 +1,22 @@
-﻿using Dorsavi.Win.Framework.Infrastructure;
-using Dorsavi.Win.Framework.Model;
+﻿using Dorsavi.Win.Framework.Model;
 using Dorsavi.Win.Framework.PubSub;
+using Dorsavi.Win.Mongo.Common;
 using Dorsavi.Win.Mongo.Data;
 using Microsoft.ReactNative.Managed;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace rnwindowsminimal.Realm
 {
     [ReactModule]
-    public class RnData
+    public class RnData : BasePublisher
     {
+        #region Events
+
         [ReactEvent]
         public Action<string> RealmChanged { get; set; }
-
-        private readonly Subscriber _subscriber;
-
-        private MongoDb db { get; set; }
-        public RnData()
-        {
-            _subscriber = Singleton<Subscriber>.Instance;
-            _subscriber.NotificationReceived += NotificationReceived;
-            db = new MongoDb();
-            Task.Run(() => db.InitialiseAsync());
-        }
-
-
 
         private void NotificationReceived(object sender, EventArgs e)
         {
@@ -38,7 +28,28 @@ namespace rnwindowsminimal.Realm
                     RealmChanged(JsonConvert.SerializeObject(notificationEvent.Content));
                 }
             }
+        }
 
+        #endregion Events
+
+        private DatabaseStrategy db { get; set; }
+
+        public RnData()
+        {
+            _subscriber.NotificationReceived += NotificationReceived;
+        }
+
+        public async Task<string> Init(string region, string apiId, string apiKey, string partitionConfig)
+        {
+            var resp = new ServiceResponse();
+
+            if (!DbRegion.TryFromName(region, out DbRegion regionResult))
+            {
+                resp.ToInvalidRequest($"Region not matched, please select from available region : {string.Join(",", DbRegion.List.Select(x => x.Name))}");
+                return JsonConvert.SerializeObject(resp);
+            }
+
+            return JsonConvert.SerializeObject(await db.InitialiseDatabases(regionResult, apiId, apiKey, partitionConfig));
         }
     }
 }

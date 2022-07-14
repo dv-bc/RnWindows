@@ -18,6 +18,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const WinBluetoothEventEmitter = new NativeEventEmitter(NativeModules.RnBluetooth);
+const WinModuleEventEmitter = new NativeEventEmitter(NativeModules.Events);
 let KnownDevice = [
   // {
   //   id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
@@ -90,8 +91,6 @@ export default function BleManager() {
 
   useEffect(() => {
     // componentDidMount in functional component.
-    WinBluetoothEventEmitter.addListener('Event', BleEvent);
-    WinBluetoothEventEmitter.addListener('UserNotification', UserNotification);
     WinBluetoothEventEmitter.addListener('KnownDeviceUpdated', KnownDevicesUpdated);
     WinBluetoothEventEmitter.addListener('ConnectedDevicesUpdated', ConnectedDevicesUpdated);
     WinBluetoothEventEmitter.addListener('OnDeviceDisconnect', DeviceDisconnect);
@@ -100,12 +99,18 @@ export default function BleManager() {
     WinBluetoothEventEmitter.addListener('IsScanningEvent', SetScanning);
     WinBluetoothEventEmitter.addListener('IsConnecting', SetConnecting);
     WinBluetoothEventEmitter.addListener('SubscriptionEvent', SubscriptionEvent);
+
+    WinModuleEventEmitter.addListener('Notification', Notification);
+    WinModuleEventEmitter.addListener('Event', Event);
+
+
     return () => {
 
       // componentwillunmount in functional component.
       // Anything in here is fired on component unmount.
-      WinBluetoothEventEmitter.addListener('Event', BleEvent).remove();
-      WinBluetoothEventEmitter.addListener('UserNotification', UserNotification).remove();
+      WinModuleEventEmitter.addListener('Notification', Notification).remove();
+      WinModuleEventEmitter.addListener('Event', Event).remove();
+
       WinBluetoothEventEmitter.addListener('KnownDeviceUpdated', KnownDevicesUpdated).remove();
       WinBluetoothEventEmitter.addListener('ConnectedDevicesUpdated', ConnectedDevicesUpdated).remove();
       WinBluetoothEventEmitter.addListener('IsScanningEvent', SetScanning).remove();
@@ -191,10 +196,10 @@ export default function BleManager() {
   function DeviceWatcherEnumerationCompleted(message: string) {
     alert(message);
   }
-  function BleEvent(message: string) {
+  function Event(message: string) {
     console.log("Event was fired with: " + message);
   }
-  function UserNotification(message: string) {
+  function Notification(message: string) {
     console.log("Notification to user: " + message);
   }
   function SubscriptionEvent(message: string) {

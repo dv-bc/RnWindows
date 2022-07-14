@@ -1,7 +1,6 @@
 ﻿using Dorsavi.Win.Bluetooth.Common;
 using Dorsavi.Win.Bluetooth.Constants;
 using Dorsavi.Win.Bluetooth.Models;
-using Dorsavi.Win.Framework.Infrastructure;
 using Dorsavi.Win.Framework.Model;
 using Dorsavi.Win.Framework.PubSub;
 using Newtonsoft.Json;
@@ -16,15 +15,10 @@ using Windows.Storage.Streams;
 
 namespace Dorsavi.Win.Bluetooth.Ble
 {
-    public class BleDeviceCharacteristic : IDisposable
+    public class BleDeviceCharacteristic : BasePublisher, IDisposable
     {
-        private readonly List<Publisher> _publishers;
-        private readonly Subscriber _subscriber;
-
         public BleDeviceCharacteristic()
         {
-            _publishers = Singleton<List<Publisher>>.Instance;
-            _subscriber = Singleton<Subscriber>.Instance;
         }
 
         public BleDeviceCharacteristic(GattCharacteristic gattCharacteristic, string deviceId, string serviceId) : this()
@@ -190,6 +184,7 @@ namespace Dorsavi.Win.Bluetooth.Ble
             }
             return resp;
         }
+
         public byte[] GetByteArrayFromHexCode(string hexCode)
         {
             int hexLength = hexCode.Length;
@@ -220,8 +215,6 @@ namespace Dorsavi.Win.Bluetooth.Ble
                             writer.ByteOrder = ByteOrder.LittleEndian;
                             writer.WriteInt32(readValue);
                             writer.WriteUInt32(5);
-
-
 
                             result = await Characteristic.WriteValueWithResultAsync(writer.DetachBuffer());
                         }
@@ -279,12 +272,7 @@ namespace Dorsavi.Win.Bluetooth.Ble
 
                 byte[] data;
                 CryptographicBuffer.CopyToByteArray(args.CharacteristicValue, out data);
-
-                var publisher = _publishers.FirstOrDefault(x => x.PublisherName == PublisherName);
-                if (publisher != null)
-                {
-                    publisher.Publish(Convert.ToBase64String(data));
-                }
+                Publish(PublisherName, Convert.ToBase64String(data));
             }
             catch (Exception ex)
             {
@@ -296,9 +284,8 @@ namespace Dorsavi.Win.Bluetooth.Ble
         {
             if (!subscribedForNotification)
             {
-                var publisher = new Publisher($"{PublisherName}", PublisherType.SubscriptionValue);
-                _subscriber.Subscribe(publisher);
-                _publishers.Add(publisher);
+                ModifyPublisher($"{PublisherName}", PublisherType.SubscriptionValue);
+
                 Characteristic.ValueChanged += Characteristic_ValueChanged;
                 subscribedForNotification = true;
             }
@@ -308,9 +295,8 @@ namespace Dorsavi.Win.Bluetooth.Ble
         {
             if (subscribedForNotification)
             {
-                var publisher = _publishers.FirstOrDefault(x => x.PublisherName == PublisherName);
-                _subscriber.Unsubscribe(publisher);
-                _publishers.Remove(publisher);
+                ModifyPublisher(PublisherName, PublisherType.SubscriptionValue, true);
+
                 Characteristic.ValueChanged -= Characteristic_ValueChanged;
                 subscribedForNotification = false;
             }

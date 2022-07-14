@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace Dorsavi.Win.Framework.Model
@@ -52,34 +51,7 @@ namespace Dorsavi.Win.Framework.Model
             return response;
         }
 
-        public static TResponse ValidateModel<TResponse, TRequest>(this TRequest obj)
-            where TRequest : class
-            where TResponse : ServiceResponse
-        {
-            var response = (TResponse)Activator.CreateInstance(typeof(TResponse));
 
-            foreach (var prop in obj.GetType().GetProperties()
-                .Where(prop => prop.IsDefined(typeof(RequiredAttribute), true)).ToList())
-            {
-                var value = prop.GetValue(obj, null);
-                if (value == null || value.ToString().Length == 0)
-                {
-                    response.Message.Add($"{prop.Name} is required");
-                    response.Valid = false;
-                }
-            }
-            foreach (var prop in obj.GetType().GetProperties()
-                .Where(prop => prop.IsDefined(typeof(EmailAddressAttribute), true)).ToList())
-            {
-                if (!new EmailAddressAttribute().IsValid(prop.GetValue(obj, null)))
-                {
-                    response.Message.Add($"Invalid email format");
-                    response.Valid = false;
-                }
-            }
-
-            return response;
-        }
 
         public static ServiceResponse<List<TSource>> CombineResponseContent<TSource>(this List<ServiceResponse<TSource>> responses)
         {

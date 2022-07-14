@@ -1,67 +1,128 @@
-﻿using Dorsavi.Win.Framework.Infrastructure;
+﻿using Dorsavi.Win.Framework.Model;
 using Dorsavi.Win.Framework.PubSub;
+using Dorsavi.Win.Mongo.Common;
+using Dorsavi.Win.Mongo.Interface;
 using Realms;
 using Realms.Sync;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dorsavi.Win.Mongo.Data
 {
-    public class MongoDb
+    public class DatabaseStrategy : IDatabaseStrategy
+    {
+        private static List<MongoDb> Realms { get; set; }
+
+        public Func<DbRegion, IDatabaseContext> db = processor =>
+        {
+            return Realms.FirstOrDefault(x => x.AppliesTo(processor));
+        };
+
+        public DatabaseStrategy()
+        {
+        }
+
+        public ServiceResponse Create<T>(DbRegion region, T data) where T : RealmObject
+        {
+            return db(region).Create(data);
+        }
+
+        public List<T> Read<T>(DbRegion region) where T : RealmObject
+        {
+            return db(region).Read<T>();
+        }
+
+        public T Read<T>(DbRegion region, long Id) where T : RealmObject
+        {
+            return db(region).Read<T>(Id);
+        }
+
+        public void Update<T>(DbRegion region, long Id) where T : RealmObject
+        {
+            db(region).Update<T>(Id);
+        }
+
+        public void Delete<T>(DbRegion region, long Id) where T : RealmObject
+        {
+            db(region).Delete<T>(Id);
+        }
+
+        public async Task<ServiceResponse> InitialiseDatabases(DbRegion region, string apiId, string apiKey, string partitionConfig)
+        {
+            return await db(region).InitialiseAsync(apiId, apiKey, partitionConfig, region);
+        }
+    }
+
+    public class MongoDb : BasePublisher, IDisposable, IDatabaseContext
     {
         private Realm connection { get; set; }
+        private string publisherName { get; set; }
 
-        private readonly List<Publisher> _publishers;
-        private readonly Subscriber _subscriber;
+        public bool AppliesTo(DbRegion dbRegion)
+        {
+            return dbRegion == Region;
+        }
 
         public MongoDb()
         {
-            _publishers = Singleton<List<Publisher>>.Instance;
-            _subscriber = Singleton<Subscriber>.Instance;
-
-            var publisher = new Publisher(this.GetType().Name, PublisherType.NewMongo);
-            _subscriber.Subscribe(publisher);
-            _publishers.Add(publisher);
-
-
+            publisherName = this.GetType().Name;
+            ModifyPublisher(publisherName, PublisherType.NewMongo);
             connection.RealmChanged += Connection_RealmChanged;
-
         }
-        public async Task InitialiseAsync()
+
+        public DbRegion Region { get; set; }
+
+        public async Task<ServiceResponse> InitialiseAsync(string apiId, string apiKey, string partitionConfig, DbRegion region)
         {
+            var resp = new ServiceResponse();
             try
             {
-                var app = App.Create("");
-                var user = await app.LogInAsync(Credentials.Anonymous());
-                var config = new PartitionSyncConfiguration("myPart", user);
-                connection = await Realm.GetInstanceAsync(config);
 
+                var app = App.Create(apiId);
+                var user = await app.LogInAsync(Credentials.ApiKey(apiKey));
+                var config = new PartitionSyncConfiguration(partitionConfig, user);
+                connection = await Realm.GetInstanceAsync(config);
+                Region = region;
+                return resp;
             }
             catch (System.Exception ex)
             {
+                Publish(PublisherType.ErrorPublisher, ex.Message);
+                resp = resp.ToInvalidRequest(ex.Message);
             }
-
+            return resp;
         }
 
         private void Connection_RealmChanged(object sender, System.EventArgs e)
         {
-            var publisher = _publishers.FirstOrDefault(x => x.PublisherName == this.GetType().Name);
-            if (publisher != null)
-            {
-                publisher.Publish("Realm updated, see content for details", sender);
-            }
+            Publish(publisherName, $"Region : {Region}", sender);
         }
 
-        public void Create<T>(T data) where T : RealmObject
+        public ServiceResponse Create<T>(T data) where T : RealmObject
         {
-            //if (connection == null)
-            //    return null;
-
-            connection.Write(() =>
+            var resp = new ServiceResponse();
+            if (connection == null)
             {
-                connection.Add(data);
-            });
+                resp.ToInvalidRequest("Realm not initialised");
+                return resp;
+            }
+
+            try
+            {
+                connection.Write(() =>
+                {
+                    connection.Add(data);
+                });
+                resp.Valid = true;
+            }
+            catch (Exception ex)
+            {
+                resp.ToInvalidRequest("Realm not initialised");
+                return resp;
+            }
+            return resp;
         }
 
         public List<T> Read<T>() where T : RealmObject
@@ -94,6 +155,10 @@ namespace Dorsavi.Win.Mongo.Data
                 });
         }
 
-
+        public void Dispose()
+        {
+            ModifyPublisher(publisherName, PublisherType.NewMongo, true);
+            this.Dispose();
+        }
     }
 }
