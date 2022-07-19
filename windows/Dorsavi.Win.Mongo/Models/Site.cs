@@ -1,8 +1,10 @@
-﻿using MongoDB.Bson;
+﻿using Dorsavi.Win.Framework.Model;
+using MongoDB.Bson;
 using Realms;
 
 namespace Dorsavi.Win.Mongo.Models
 {
+  
     public class Site : RealmObject, IEntity
     {
         [PrimaryKey]
@@ -32,5 +34,6 @@ namespace Dorsavi.Win.Mongo.Models
 
         [MapTo("modifiedUtc")]
         public string ModifiedUtc { get; set; }
+
     }
 }

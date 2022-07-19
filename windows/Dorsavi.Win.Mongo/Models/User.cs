@@ -31,6 +31,6 @@ namespace Dorsavi.Win.Mongo.Models
         public string EmailAddress { get; set; }
 
         [MapTo("resources")]
-        public List<string> Resources { get; set; }
+        public IList<string> Resources { get;  }
     }
 }

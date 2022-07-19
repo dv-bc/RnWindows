@@ -2,6 +2,8 @@
 using Dorsavi.Win.Framework.PubSub;
 using Dorsavi.Win.Mongo.Common;
 using Dorsavi.Win.Mongo.Data;
+using Dorsavi.Win.Mongo.Interface;
+using Dorsavi.Win.Mongo.Models;
 using Microsoft.ReactNative.Managed;
 using Newtonsoft.Json;
 using System;
@@ -25,20 +27,28 @@ namespace rnwindowsminimal.Realm
                 var notificationEvent = (NotificationEvent)e;
                 if (notificationEvent.PublisherType == PublisherType.NewMongo)
                 {
-                    RealmChanged(JsonConvert.SerializeObject(notificationEvent.Content));
+                    try
+                    {
+                        RealmChanged(JsonConvert.SerializeObject(notificationEvent.Content));
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
         }
 
         #endregion Events
 
-        private DatabaseStrategy db { get; set; }
+        private IDatabaseStrategy db { get; set; }
 
         public RnData()
         {
+            db= new DatabaseStrategy();
             _subscriber.NotificationReceived += NotificationReceived;
         }
 
+        [ReactMethod("Init")]
         public async Task<string> Init(string region, string apiId, string apiKey, string partitionConfig)
         {
             var resp = new ServiceResponse();
@@ -50,6 +60,67 @@ namespace rnwindowsminimal.Realm
             }
 
             return JsonConvert.SerializeObject(await db.InitialiseDatabases(regionResult, apiId, apiKey, partitionConfig));
+        }
+
+        [ReactMethod("GetAll")]
+        public async Task<string> Get(string region, string type)
+        {
+            var resp = new ServiceResponse();
+
+            if (!DbRegion.TryFromName(region, out DbRegion regionResult))
+            {
+                resp.ToInvalidRequest($"Region not matched, please select from available region : {string.Join(",", DbRegion.List.Select(x => x.Name))}");
+                return JsonConvert.SerializeObject(resp);
+            }
+
+            return JsonConvert.SerializeObject(db.Read<subject>(regionResult));
+        }
+
+        [ReactMethod("Get")]
+        public async Task<string> Get(string region, string type, int Id)
+        {
+            var resp = new ServiceResponse();
+
+            if (!DbRegion.TryFromName(region, out DbRegion regionResult))
+            {
+                resp.ToInvalidRequest($"Region not matched, please select from available region : {string.Join(",", DbRegion.List.Select(x => x.Name))}");
+                return JsonConvert.SerializeObject(resp);
+            }
+
+
+            Type dataType = Type.GetType(type);
+            object instance = Activator.CreateInstance(dataType);
+
+
+            return JsonConvert.SerializeObject(db.Read<instance.GetType()>(regionResult));
+        }
+
+        [ReactMethod("Update")]
+        public async Task<string> Get(string region, string type, int Id, string jsonData)
+        {
+            var resp = new ServiceResponse();
+
+            if (!DbRegion.TryFromName(region, out DbRegion regionResult))
+            {
+                resp.ToInvalidRequest($"Region not matched, please select from available region : {string.Join(",", DbRegion.List.Select(x => x.Name))}");
+                return JsonConvert.SerializeObject(resp);
+            }
+
+            return JsonConvert.SerializeObject(db.Read<subject>(regionResult));
+        }
+
+        [ReactMethod("Delete")]
+        public async Task<string> Delete(string region, string type, int Id)
+        {
+            var resp = new ServiceResponse();
+
+            if (!DbRegion.TryFromName(region, out DbRegion regionResult))
+            {
+                resp.ToInvalidRequest($"Region not matched, please select from available region : {string.Join(",", DbRegion.List.Select(x => x.Name))}");
+                return JsonConvert.SerializeObject(resp);
+            }
+
+            return JsonConvert.SerializeObject(db.Read<subject>(regionResult));
         }
     }
 }

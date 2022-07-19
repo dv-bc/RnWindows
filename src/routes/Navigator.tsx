@@ -19,7 +19,7 @@ export default function Navigator() {
                     <Button title={"Camera"} onPress={() => { setPage('camera'); }} />
                 </View>
                 <View style={{ flex: 1 }}>
-                    <Button title={"Details"} onPress={() => { setPage('Details'); }} />
+                    <Button title={"Realm"} onPress={() => { setPage('Details'); }} />
                 </View>
 
             </View>

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using Realms;
+using System;
 using System.Collections.Generic;
 
 namespace Dorsavi.Win.Mongo.Models
@@ -8,7 +9,6 @@ namespace Dorsavi.Win.Mongo.Models
     {
         public subject()
         {
-            SubjectData = new List<SubjectData>();
         }
 
         [PrimaryKey]
@@ -22,34 +22,39 @@ namespace Dorsavi.Win.Mongo.Models
         public bool Active { get; set; }
 
         [MapTo("SiteId")]
+        [Required]
         public string SiteId { get; set; }
 
         [MapTo("Iv")]
         public string Iv { get; set; }
 
         [MapTo("SubjectData")]
-        public List<SubjectData> SubjectData { get; set; }
+        public IList<subject_SubjectData> SubjectData { get; }
 
         [MapTo("CreatedBy")]
+        [Required]
         public string CreatedBy { get; set; }
 
         [MapTo("CreatedUtc")]
-        public BsonDateTime CreatedUtc { get; set; }
+        public DateTimeOffset CreatedUtc { get; set; }
 
         [MapTo("CreatedUtcLocale")]
+        [Required]
         public string CreatedUtcLocale { get; set; }
 
         [MapTo("ModifiedBy")]
+        [Required]
         public string ModifiedBy { get; set; }
 
         [MapTo("ModifiedUtc")]
-        public BsonDateTime ModifiedUtc { get; set; }
+        public DateTimeOffset ModifiedUtc { get; set; }
 
         [MapTo("ModifiedUtcLocale")]
+        [Required]
         public string ModifiedUtcLocale { get; set; }
     }
 
-    public class SubjectData : EmbeddedObject
+    public class subject_SubjectData : EmbeddedObject
     {
         [MapTo("Name")]
         public string Name { get; set; }
@@ -76,10 +81,10 @@ namespace Dorsavi.Win.Mongo.Models
         public int stopTimeStamp { get; set; }
 
 
-        public List<int> startIndex { get; set; }
+        public IList<int> startIndex { get;  }
 
 
-        public List<int> stopIndex { get; set; }
+        public IList<int> stopIndex { get;  }
 
 
         public string videoURI { get; set; }
@@ -88,145 +93,7 @@ namespace Dorsavi.Win.Mongo.Models
         public bool? lob { get; set; }
     }
 
-    public class assessment_Movement : EmbeddedObject
-    {
-        public string Name { get; set; }
-
-
-        public string Title { get; set; }
-
-
-        public string TestInProgressData { get; set; }
-
-
-        public int? Score { get; set; }
-    }
-
-    public class assessment_Overview : EmbeddedObject
-    {
-        public double? AmiRatingAgg { get; set; }
-
-
-
-        public double? MovementScoreAgg { get; set; }
-
-
-
-        public double? LSIRatingAgg { get; set; }
-
-
-
-        public double? LobRatingAgg { get; set; }
-
-
-
-        public double? InjuryAgg { get; set; }
-
-
-
-        public string InjuryName { get; set; }
-
-
-        public double? SportAgg { get; set; }
-
-
-
-        public string SportName { get; set; }
-
-
-        public double? ConcussionAgg { get; set; }
-
-
-
-        public string ConcussionName { get; set; }
-
-
-        public string Gender { get; set; }
-
-
-        public double? Tsk11 { get; set; }
-    }
-
-    //== MAIN ==
-
-
-    public class assessment : RealmObject, IEntity
-    {
-        [PrimaryKey]
-        [MapTo("_id")]
-        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
-        public string AccountId { get; set; }
-
-
-        public string AccountName { get; set; }
-
-
-        public string AssessmentId { get; set; }
-
-
-        public string AssessmentType { get; set; }
-
-
-        public int? AssessmentTypeId { get; set; }
-
-
-        public string CreatedBy { get; set; }
-
-
-        public BsonDateTime CreatedUtc { get; set; }
-
-
-        public string CreatedUtcLocale { get; set; }
-
-
-        public string Description { get; set; }
-
-
-        public BsonDateTime StartUtc { get; set; }
-
-
-        public string StartUtcLocale { get; set; }
-
-
-        public BsonDateTime EndUtc { get; set; }
-
-
-        public string EndUtcLocale { get; set; }
-
-
-        public string ModifiedBy { get; set; }
-
-
-        public BsonDateTime ModifiedUtc { get; set; }
-
-
-        public string ModifiedUtcLocale { get; set; }
-
-
-        public string ModuleName { get; set; }
-
-
-        public string Name { get; set; }
-        public string SiteId { get; set; }
-
-        public string SiteName { get; set; }
-
-
-        public string Status { get; set; }
-
-
-        public int? StatusId { get; set; }
-
-
-        public string SubjectId { get; set; }
-
-
-        public assessment_Movement Movement { get; set; }
-
-
-
-        public assessment_Overview Overview { get; set; }
-    }
+    
 
     public class MovementRepSchema : RealmObject, IEntity
     {

@@ -13,13 +13,13 @@ namespace Dorsavi.Win.Mongo.Interface
 
         ServiceResponse Create<T>(T data) where T : RealmObject;
 
-        List<T> Read<T>() where T : RealmObject;
+        Task<ServiceResponse<List<T>>> Read<T>() where T : RealmObject;
 
         T Read<T>(long Id) where T : RealmObject;
 
-        void Update<T>(long Id) where T : RealmObject;
+        ServiceResponse Update<T>(long Id, T data) where T : RealmObject;
 
-        void Delete<T>(long Id) where T : RealmObject;
+        ServiceResponse Delete<T>(long Id) where T : RealmObject;
 
     }
 
@@ -28,12 +28,12 @@ namespace Dorsavi.Win.Mongo.Interface
         Task<ServiceResponse> InitialiseDatabases(DbRegion region, string apiId, string apiKey, string partitionConfig);
         ServiceResponse Create<T>(DbRegion region, T data) where T : RealmObject;
 
-        List<T> Read<T>(DbRegion region) where T : RealmObject;
+        Task<ServiceResponse<List<T>>> Read<T>(DbRegion region) where T : RealmObject;
 
         T Read<T>(DbRegion region, long Id) where T : RealmObject;
 
-        void Update<T>(DbRegion region, long Id) where T : RealmObject;
+        ServiceResponse Update<T>(DbRegion region, long Id, T data) where T : RealmObject;
 
-        void Delete<T>(DbRegion region, long Id) where T : RealmObject;
+        ServiceResponse Delete<T>(DbRegion region, long Id) where T : RealmObject;
     }
 }

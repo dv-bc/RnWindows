@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using System;
 
 namespace Dorsavi.Win.Mongo.Models
 {
@@ -10,10 +11,10 @@ namespace Dorsavi.Win.Mongo.Models
     public interface IMetadata
     {
         string CreatedBy { get; set; }
-        BsonDateTime CreatedUtc { get; set; }
+        DateTimeOffset CreatedUtc { get; set; }
         string CreatedUtcLocale { get; set; }
         string ModifiedBy { get; set; }
-        BsonDateTime ModifiedUtc { get; set; }
+        DateTimeOffset ModifiedUtc { get; set; }
         string ModifiedUtcLocale { get; set; }
 
 
